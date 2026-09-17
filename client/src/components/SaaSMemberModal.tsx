@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
-import { UserPlus, Users } from "lucide-react";
+import { Plus, UserPlus, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Member } from "../../../drizzle/schema";
@@ -58,8 +58,28 @@ export default function SaaSMemberModal({
   const [personalVolume, setPersonalVolume] = useState(100);
   const [avatarUrl, setAvatarUrl] = useState(AVATAR_OPTIONS[0]);
   const [notes, setNotes] = useState("");
+  const [showNewRankInput, setShowNewRankInput] = useState(false);
+  const [newRankName, setNewRankName] = useState("");
+  const [newRankColor, setNewRankColor] = useState("#1d70f5");
+  const isRankSelectAutoOpen =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("openRank") === "true";
 
   const utils = trpc.useUtils();
+  const { data: ranksList } = trpc.rank.list.useQuery({ orgId }, { enabled: isOpen });
+
+  const createRankMutation = trpc.rank.create.useMutation({
+    onSuccess: (newRank) => {
+      toast.success(`Created custom rank "${newRank.name}"`);
+      utils.rank.list.invalidate({ orgId });
+      setRank(newRank.name);
+      setNewRankName("");
+      setShowNewRankInput(false);
+    },
+    onError: (err) => {
+      toast.error("Failed to create rank", { description: err.message });
+    },
+  });
 
   useEffect(() => {
     if (memberToEdit) {
@@ -230,18 +250,95 @@ export default function SaaSMemberModal({
             {/* Rank and PV */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">NETWORK RANK</label>
-                <Select value={rank} onValueChange={(v) => setRank(v)}>
-                  <SelectTrigger className="h-9 text-xs">
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">NETWORK RANK</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewRankInput(!showNewRankInput)}
+                    className="text-[10px] font-bold text-[#1d70f5] hover:underline flex items-center gap-0.5"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>New Rank</span>
+                  </button>
+                </div>
+
+                {showNewRankInput && (
+                  <div className="p-2.5 mb-2 bg-blue-50/70 border border-blue-200 rounded-xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold text-blue-900 uppercase">Create Custom Rank</span>
+                      <button
+                        type="button"
+                        onClick={() => setShowNewRankInput(false)}
+                        className="text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                    <Input
+                      value={newRankName}
+                      onChange={(e) => setNewRankName(e.target.value)}
+                      placeholder="e.g. Emerald Elite"
+                      className="h-7 text-xs bg-white border-slate-200"
+                      autoFocus
+                    />
+                    <div className="flex items-center justify-between gap-1 pt-0.5">
+                      <div className="flex items-center gap-1">
+                        {["#1d70f5", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#64748b"].map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setNewRankColor(c)}
+                            className={`w-4 h-4 rounded-full border border-white shadow-xs transition-transform ${
+                              newRankColor === c ? "scale-125 ring-2 ring-blue-500" : ""
+                            }`}
+                            style={{ backgroundColor: c }}
+                          />
+                        ))}
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={() => {
+                          if (!newRankName.trim()) {
+                            toast.error("Please enter a rank title");
+                            return;
+                          }
+                          createRankMutation.mutate({
+                            orgId,
+                            name: newRankName.trim(),
+                            color: newRankColor,
+                          });
+                        }}
+                        disabled={createRankMutation.isPending}
+                        className="h-6 text-[10px] font-bold bg-[#1d70f5] text-white px-2 rounded"
+                      >
+                        Save Rank
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                <Select
+                  value={rank}
+                  onValueChange={(v) => setRank(v)}
+                  defaultOpen={isRankSelectAutoOpen}
+                >
+                  <SelectTrigger className="h-9 text-xs bg-white border-slate-200 shadow-sm">
                     <SelectValue placeholder="Select Rank" />
                   </SelectTrigger>
-                  <SelectContent className="text-xs">
-                    <SelectItem value="Associate">Associate</SelectItem>
-                    <SelectItem value="Bronze Builder">Bronze Builder</SelectItem>
-                    <SelectItem value="Silver Associate">Silver Associate</SelectItem>
-                    <SelectItem value="Gold Leader">Gold Leader</SelectItem>
-                    <SelectItem value="Diamond Executive">Diamond Executive</SelectItem>
-                    <SelectItem value="Crown Director">Crown Director</SelectItem>
+                  <SelectContent className="bg-white text-slate-900 border border-slate-200/90 shadow-2xl z-[9999] max-h-60">
+                    {(ranksList || []).map((r) => (
+                      <SelectItem key={r.id} value={r.name} className="py-2 cursor-pointer">
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: r.color }}
+                          />
+                          <span className="font-semibold text-slate-900">{r.name}</span>
+                          <span className="text-[10px] text-slate-400 font-normal">({r.minPV} PV)</span>
+                        </div>
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

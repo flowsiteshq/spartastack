@@ -44,6 +44,23 @@ import { toast } from "sonner";
 import { Member } from "../../../drizzle/schema";
 import { TreeNode } from "../../../server/db";
 
+const DEFAULT_RANK_COLOR_PALETTE: Record<string, string> = {
+  "crown director": "#f59e0b",
+  "diamond executive": "#2563eb",
+  "gold leader": "#eab308",
+  "silver associate": "#64748b",
+  "bronze builder": "#b45309",
+  "associate": "#71717a",
+  "emerald elite": "#10b981",
+  "platinum ambassador": "#06b6d4",
+  "ruby master": "#dc2626",
+};
+
+export function getRankBadgeColor(rankName: string): string {
+  const normalized = (rankName || "").toLowerCase().trim();
+  return DEFAULT_RANK_COLOR_PALETTE[normalized] || "#1d70f5";
+}
+
 interface SaaSTreeCanvasProps {
   root: TreeNode | null;
   orgName: string;
@@ -825,7 +842,12 @@ function Level1Card({
           <div className="font-extrabold text-slate-900 text-xs truncate leading-tight">
             {m.firstName} {m.lastName}
           </div>
-          <div className="text-[11px] font-semibold text-slate-600 truncate mt-0.5">{m.rank}</div>
+          <div
+            className="text-[11px] font-semibold truncate mt-0.5"
+            style={{ color: getRankBadgeColor(m.rank) }}
+          >
+            {m.rank}
+          </div>
           <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mt-1 pt-1 border-t border-slate-100">
             <span>ID: PV{m.personalVolume}</span>
             <span className="text-[#1d70f5] font-bold">
@@ -993,7 +1015,10 @@ function Level2Card({
         <div className="font-extrabold text-slate-900 text-xs truncate max-w-full text-center mt-1.5 leading-tight">
           {m.firstName} {m.lastName}
         </div>
-        <div className="text-[10px] font-semibold text-slate-500 truncate max-w-full text-center mt-0.5">
+        <div
+          className="text-[10px] font-semibold truncate max-w-full text-center mt-0.5"
+          style={{ color: getRankBadgeColor(m.rank) }}
+        >
           {m.rank}
         </div>
         <div className="text-[10px] font-bold text-slate-600 mt-1 pt-1 border-t border-slate-100 w-full text-center">

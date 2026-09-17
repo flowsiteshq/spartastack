@@ -25,3 +25,13 @@
 - [x] Build Saved Charts manager (save, load, duplicate, rename)
 - [x] Write Vitest tests covering locking, random stack with locks, saved charts, and auto-fill
 - [x] Verify with browser screenshots and deliver
+
+## Custom Ranks & Dropdown Opacity Polish
+- [x] Fix translucent rank assignment and select dropdowns: ensure solid opaque `bg-white`, border, shadow, and z-50
+- [x] Update database schema and database to store custom organization ranks (name, color, minPV, tier level)
+- [x] Implement backend tRPC procedures to list, create, edit, delete, and reorder custom ranks per organization
+- [x] Build Custom Rank Manager in Chart Settings with rank list, color picker/preset, min PV, and reordering
+- [x] Allow inline "+ Create Custom Rank" directly from member enrollment/edit modals
+- [x] Update member forms, directory filters, member detail drawers, tree node cards, and dashboard metrics to use custom ranks dynamically
+- [x] Add unit tests for custom rank CRUD and assignment
+- [x] Capture screenshot verification of solid dropdown and custom rank UI

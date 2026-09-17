@@ -56,7 +56,12 @@ export default function Home() {
   } | null>(null);
 
   // Member modal state (create / edit)
-  const [memberModalOpen, setMemberModalOpen] = useState(false);
+  const [memberModalOpen, setMemberModalOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      return new URLSearchParams(window.location.search).get("enroll") === "true";
+    }
+    return false;
+  });
   const [memberToEdit, setMemberToEdit] = useState<Member | null>(null);
 
   // Member detail drawer

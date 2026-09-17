@@ -504,6 +504,84 @@ export const appRouter = router({
   }),
 
   // ========================================================
+  // Custom Organization Ranks
+  // ========================================================
+  rank: router({
+    list: adminProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ input }) => {
+        return db.getOrganizationRanks(input.orgId);
+      }),
+
+    create: adminProcedure
+      .input(
+        z.object({
+          orgId: z.number(),
+          name: z.string().min(1, "Rank title is required"),
+          color: z.string().optional(),
+          minPV: z.number().min(0).optional(),
+          tierLevel: z.number().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return db.addOrganizationRank(input.orgId, input);
+      }),
+
+    update: adminProcedure
+      .input(
+        z.object({
+          orgId: z.number(),
+          rankId: z.string(),
+          name: z.string().optional(),
+          color: z.string().optional(),
+          minPV: z.number().optional(),
+          tierLevel: z.number().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { orgId, rankId, ...data } = input;
+        return db.updateOrganizationRank(orgId, rankId, data);
+      }),
+
+    reorder: adminProcedure
+      .input(
+        z.object({
+          orgId: z.number(),
+          rankIds: z.array(z.string()),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return db.reorderOrganizationRanks(input.orgId, input.rankIds);
+      }),
+
+    saveAll: adminProcedure
+      .input(
+        z.object({
+          orgId: z.number(),
+          ranks: z.array(
+            z.object({
+              id: z.string(),
+              name: z.string().min(1),
+              color: z.string(),
+              minPV: z.number(),
+              tierLevel: z.number(),
+            })
+          ),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return db.saveOrganizationRanks(input.orgId, input.ranks);
+      }),
+
+    delete: adminProcedure
+      .input(z.object({ orgId: z.number(), rankId: z.string() }))
+      .mutation(async ({ input }) => {
+        await db.deleteOrganizationRank(input.orgId, input.rankId);
+        return { success: true };
+      }),
+  }),
+
+  // ========================================================
   // Activity Logs
   // ========================================================
   activity: router({

@@ -56,6 +56,7 @@ export default function MembersManagerView({
   const [rankFilter, setRankFilter] = useState("all");
 
   const utils = trpc.useUtils();
+  const { data: ranksList } = trpc.rank.list.useQuery({ orgId });
 
   const { data: members, isLoading } = trpc.member.list.useQuery({
     orgId,
@@ -200,14 +201,16 @@ export default function MembersManagerView({
             <SelectTrigger className="w-36 h-8 text-xs bg-slate-50 border-slate-200">
               <SelectValue placeholder="All Ranks" />
             </SelectTrigger>
-            <SelectContent className="text-xs">
+            <SelectContent className="bg-white text-slate-900 border border-slate-200/90 shadow-2xl z-[9999]">
               <SelectItem value="all">All Ranks</SelectItem>
-              <SelectItem value="Associate">Associate</SelectItem>
-              <SelectItem value="Bronze Builder">Bronze Builder</SelectItem>
-              <SelectItem value="Silver Associate">Silver Associate</SelectItem>
-              <SelectItem value="Gold Leader">Gold Leader</SelectItem>
-              <SelectItem value="Diamond Executive">Diamond Executive</SelectItem>
-              <SelectItem value="Crown Director">Crown Director</SelectItem>
+              {(ranksList || []).map((r) => (
+                <SelectItem key={r.id} value={r.name}>
+                  <div className="flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: r.color }} />
+                    <span>{r.name}</span>
+                  </div>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

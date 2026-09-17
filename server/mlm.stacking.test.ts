@@ -261,4 +261,64 @@ describe("MLM Matrix Stacking System", () => {
     const randomResult = await caller.matrix.randomFill({ orgId, count: 1 });
     expect(randomResult.placedCount).toBe(1);
   });
+
+  it("supports creating, listing, and assigning custom organization ranks", async () => {
+    const ctx = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+
+    const orgs = await caller.org.list();
+    const orgId = orgs[0].id;
+
+    // 1. Initial ranks list
+    const initialRanks = await caller.rank.list({ orgId });
+    expect(initialRanks.length).toBeGreaterThanOrEqual(6);
+
+    // 2. Create custom rank
+    const newRank = await caller.rank.create({
+      orgId,
+      name: "Emerald Elite",
+      color: "#10b981",
+      minPV: 450,
+      tierLevel: 7,
+    });
+    expect(newRank.name).toBe("Emerald Elite");
+    expect(newRank.color).toBe("#10b981");
+
+    // 3. Verify rank appears in organization ranks
+    const updatedRanks = await caller.rank.list({ orgId });
+    expect(updatedRanks.some((r) => r.name === "Emerald Elite")).toBe(true);
+
+    // 3b. Update custom rank (Edit)
+    const editedRank = await caller.rank.update({
+      orgId,
+      rankId: newRank.id,
+      name: "Emerald Master",
+      color: "#059669",
+      minPV: 480,
+    });
+    expect(editedRank.name).toBe("Emerald Master");
+    expect(editedRank.minPV).toBe(480);
+
+    // 3c. Reorder ranks
+    const currentRanks = await caller.rank.list({ orgId });
+    const reversedIds = currentRanks.map((r) => r.id).reverse();
+    const reordered = await caller.rank.reorder({ orgId, rankIds: reversedIds });
+    expect(reordered[0].id).toBe(reversedIds[0]);
+
+    // 4. Enroll member with custom rank
+    const newMember = await caller.member.create({
+      orgId,
+      firstName: "Alexis",
+      lastName: "Vance",
+      email: `alexis.${Date.now()}@apexhorizon.org`,
+      rank: "Emerald Master",
+      personalVolume: 480,
+    });
+    expect(newMember.rank).toBe("Emerald Master");
+
+    // 5. Delete custom rank
+    await caller.rank.delete({ orgId, rankId: newRank.id });
+    const afterDelete = await caller.rank.list({ orgId });
+    expect(afterDelete.some((r) => r.id === newRank.id)).toBe(false);
+  });
 });

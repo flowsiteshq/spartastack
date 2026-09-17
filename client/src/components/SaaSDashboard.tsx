@@ -43,6 +43,7 @@ export default function SaaSDashboard({
   const { data: membersList } = trpc.member.list.useQuery({ orgId });
   const { data: savedChartsList } = trpc.charts.list.useQuery({ orgId });
   const { data: activityList } = trpc.activity.list.useQuery({ orgId, limit: 6 });
+  const { data: ranksList } = trpc.rank.list.useQuery({ orgId });
 
   const rankCounts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -225,24 +226,20 @@ export default function SaaSDashboard({
             <span className="text-[10px] font-bold text-slate-400 uppercase">ROSTER BREAKDOWN</span>
           </div>
           <div className="space-y-2 pt-1">
-            {[
-              { rank: "Crown Director", color: "bg-amber-500" },
-              { rank: "Diamond Executive", color: "bg-blue-600" },
-              { rank: "Gold Leader", color: "bg-yellow-500" },
-              { rank: "Silver Associate", color: "bg-slate-400" },
-              { rank: "Bronze Builder", color: "bg-amber-700" },
-              { rank: "Associate", color: "bg-slate-300" },
-            ].map((item) => {
-              const count = rankCounts[item.rank] || 0;
+            {(ranksList || []).map((item) => {
+              const count = rankCounts[item.name] || 0;
               const pct = totalMembers > 0 ? Math.round((count / totalMembers) * 100) : 0;
               return (
-                <div key={item.rank} className="space-y-1">
+                <div key={item.id} className="space-y-1">
                   <div className="flex justify-between text-xs font-semibold">
-                    <span className="text-slate-700">{item.rank}</span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: item.color }} />
+                      <span className="text-slate-700">{item.name}</span>
+                    </div>
                     <span className="text-slate-500 font-bold">{count} ({pct}%)</span>
                   </div>
                   <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className={`h-full ${item.color}`} style={{ width: `${pct}%` }} />
+                    <div className="h-full rounded-full" style={{ width: `${pct}%`, backgroundColor: item.color }} />
                   </div>
                 </div>
               );

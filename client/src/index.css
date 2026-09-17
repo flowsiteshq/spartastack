@@ -39,6 +39,15 @@
   }
 }
 
+/* Solid Opaque Dropdown & Menu Overrides */
+[data-slot="select-content"],
+[data-slot="dropdown-menu-content"],
+[data-slot="popover-content"] {
+  background-color: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
 /* Smooth Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

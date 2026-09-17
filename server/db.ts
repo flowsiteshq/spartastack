@@ -158,6 +158,124 @@ export async function deleteOrganization(id: number): Promise<void> {
 }
 
 // ========================================================
+// Custom Organization Ranks Hierarchy
+// ========================================================
+
+export interface CustomRank {
+  id: string;
+  name: string;
+  color: string;
+  minPV: number;
+  tierLevel: number;
+}
+
+export const DEFAULT_ORG_RANKS: CustomRank[] = [
+  { id: "crown-director", name: "Crown Director", color: "#f59e0b", minPV: 500, tierLevel: 6 },
+  { id: "diamond-executive", name: "Diamond Executive", color: "#2563eb", minPV: 350, tierLevel: 5 },
+  { id: "gold-leader", name: "Gold Leader", color: "#eab308", minPV: 250, tierLevel: 4 },
+  { id: "silver-associate", name: "Silver Associate", color: "#64748b", minPV: 150, tierLevel: 3 },
+  { id: "bronze-builder", name: "Bronze Builder", color: "#b45309", minPV: 100, tierLevel: 2 },
+  { id: "associate", name: "Associate", color: "#71717a", minPV: 50, tierLevel: 1 },
+];
+
+export async function getOrganizationRanks(orgId: number): Promise<CustomRank[]> {
+  const org = await getOrganizationById(orgId);
+  if (!org || !org.settings) return DEFAULT_ORG_RANKS;
+  try {
+    const parsed = JSON.parse(org.settings);
+    if (Array.isArray(parsed.customRanks) && parsed.customRanks.length > 0) {
+      return parsed.customRanks;
+    }
+  } catch (e) {}
+  return DEFAULT_ORG_RANKS;
+}
+
+export async function saveOrganizationRanks(orgId: number, ranks: CustomRank[]): Promise<CustomRank[]> {
+  const org = await getOrganizationById(orgId);
+  if (!org) throw new Error("Organization not found");
+  let currentSettings: Record<string, any> = {};
+  if (org.settings) {
+    try {
+      currentSettings = JSON.parse(org.settings);
+    } catch (e) {}
+  }
+  currentSettings.customRanks = ranks;
+  await updateOrganization(orgId, { settings: JSON.stringify(currentSettings) });
+  await logActivity(orgId, "Administrator", `Updated custom rank hierarchy (${ranks.length} ranks)`, "update_ranks");
+  return ranks;
+}
+
+export async function addOrganizationRank(
+  orgId: number,
+  rankData: { name: string; color?: string; minPV?: number; tierLevel?: number }
+): Promise<CustomRank> {
+  const ranks = await getOrganizationRanks(orgId);
+  const slug = rankData.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  const existing = ranks.find((r) => r.name.toLowerCase() === rankData.name.toLowerCase() || r.id === slug);
+  if (existing) {
+    return existing;
+  }
+
+  const newRank: CustomRank = {
+    id: slug || `rank-${Date.now()}`,
+    name: rankData.name.trim(),
+    color: rankData.color || "#1d70f5",
+    minPV: rankData.minPV ?? 100,
+    tierLevel: rankData.tierLevel ?? (ranks.length + 1),
+  };
+
+  const updatedRanks = [newRank, ...ranks].sort((a, b) => b.tierLevel - a.tierLevel);
+  await saveOrganizationRanks(orgId, updatedRanks);
+  return newRank;
+}
+
+export async function deleteOrganizationRank(orgId: number, rankId: string): Promise<void> {
+  const ranks = await getOrganizationRanks(orgId);
+  const updatedRanks = ranks.filter((r) => r.id !== rankId && r.name !== rankId);
+  if (updatedRanks.length === 0) {
+    throw new Error("Cannot delete all ranks. At least one rank must exist.");
+  }
+  await saveOrganizationRanks(orgId, updatedRanks);
+}
+
+export async function updateOrganizationRank(
+  orgId: number,
+  rankId: string,
+  updates: Partial<Omit<CustomRank, "id">>
+): Promise<CustomRank> {
+  const ranks = await getOrganizationRanks(orgId);
+  const idx = ranks.findIndex((r) => r.id === rankId || r.name === rankId);
+  if (idx === -1) throw new Error("Rank not found");
+  const oldRank = ranks[idx];
+  const updatedRank: CustomRank = {
+    ...oldRank,
+    ...updates,
+  };
+  ranks[idx] = updatedRank;
+  await saveOrganizationRanks(orgId, ranks);
+  return updatedRank;
+}
+
+export async function reorderOrganizationRanks(orgId: number, rankIds: string[]): Promise<CustomRank[]> {
+  const ranks = await getOrganizationRanks(orgId);
+  const rankMap = new Map(ranks.map((r) => [r.id, r]));
+  const reordered: CustomRank[] = [];
+  rankIds.forEach((id, index) => {
+    const r = rankMap.get(id);
+    if (r) {
+      reordered.push({ ...r, tierLevel: rankIds.length - index });
+    }
+  });
+  ranks.forEach((r) => {
+    if (!rankIds.includes(r.id)) {
+      reordered.push(r);
+    }
+  });
+  await saveOrganizationRanks(orgId, reordered);
+  return reordered;
+}
+
+// ========================================================
 // Members Master Directory
 // ========================================================
 
@@ -256,7 +374,8 @@ export async function getMemberById(id: number): Promise<Member | undefined> {
 export async function createMember(data: InsertMember): Promise<Member> {
   const db = await getDb();
   if (!db) throw new Error("Database unavailable");
-  const [result] = await db.insert(members).values(data);
+  const avatar = data.avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80";
+  const [result] = await db.insert(members).values({ ...data, avatarUrl: avatar });
   const created = await getMemberById(result.insertId);
   if (!created) throw new Error("Failed to create member");
   await logActivity(
