@@ -2,21 +2,14 @@ import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-or
 
 /**
  * Core user table backing auth flow.
- * Extend this file with additional tables as your product grows.
- * Columns use camelCase to match both database fields and generated types.
  */
 export const users = mysqlTable("users", {
-  /**
-   * Surrogate primary key. Auto-incremented numeric value managed by the database.
-   * Use this for relations between tables.
-   */
   id: int("id").autoincrement().primaryKey(),
-  /** Manus OAuth identifier (openId) returned from the OAuth callback. Unique per user. */
   openId: varchar("openId", { length: 64 }).notNull().unique(),
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
+  role: mysqlEnum("role", ["user", "admin"]).default("admin").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -25,4 +18,53 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+export const organizations = mysqlTable("organizations", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 191 }).notNull(),
+  code: varchar("code", { length: 64 }).notNull().unique(),
+  description: text("description"),
+  matrixWidth: int("matrixWidth").default(3).notNull(),
+  matrixDepth: int("matrixDepth").default(5).notNull(),
+  blueprintCode: varchar("blueprintCode", { length: 64 }).default("SEC-3X5-ALPHA").notNull(),
+  logoUrl: text("logoUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Organization = typeof organizations.$inferSelect;
+export type InsertOrganization = typeof organizations.$inferInsert;
+
+export const members = mysqlTable("members", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  firstName: varchar("firstName", { length: 128 }).notNull(),
+  lastName: varchar("lastName", { length: 128 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  phone: varchar("phone", { length: 64 }),
+  avatarUrl: text("avatarUrl"),
+  rank: varchar("rank", { length: 64 }).default("Associate").notNull(),
+  personalVolume: int("personalVolume").default(100).notNull(),
+  joinDate: timestamp("joinDate").defaultNow().notNull(),
+  status: mysqlEnum("status", ["active", "inactive", "pending"]).default("active").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Member = typeof members.$inferSelect;
+export type InsertMember = typeof members.$inferInsert;
+
+export const placements = mysqlTable("placements", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  memberId: int("memberId").notNull(),
+  parentId: int("parentId"), // null if root
+  level: int("level").notNull(), // 0 for root, 1..5
+  positionIndex: int("positionIndex").notNull(), // 0, 1, 2
+  slotCoordinate: varchar("slotCoordinate", { length: 128 }).notNull(),
+  placedAt: timestamp("placedAt").defaultNow().notNull(),
+  notes: text("notes"),
+});
+
+export type Placement = typeof placements.$inferSelect;
+export type InsertPlacement = typeof placements.$inferInsert;
