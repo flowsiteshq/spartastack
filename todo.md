@@ -1,17 +1,27 @@
-# MLM MemberStack Planner - Project TODO
+# MemberStack SaaS Redesign - Project TODO
 
-- [x] Database schema for organizations, members, and 3x5 downline matrix placements
-- [x] Backend database queries and tRPC routers for organizations, members, and placements
-- [x] Strict 3x5 matrix placement validation (3 legs max per node, 5 levels max depth, no duplicate assignments, no circular references)
-- [x] Randomized and automatic slot placement from master member list
-- [x] Unstack/remove member action to return them safely to available pool
-- [x] Seed data script with realistic MLM organizations, member profiles, and high-quality photo avatars
-- [x] Master Member Directory UI with search, rank badges, photo avatars, and filter by available (unplaced) vs placed
-- [x] Member profile modal for creating, viewing, and editing members with photo selection
-- [x] Interactive 3 × 5 Downline Tree visualization with CAD-style connecting branches, level meters, and drill-down support
-- [x] Open slot cards with "+ ASSIGN" action and modal to pick unplaced members
-- [x] One-click "Random Place" and "Auto-Fill Next Open Slots" toolbar actions
-- [x] Organization switcher to toggle between different MLM companies/networks
-- [x] Architectural blueprint aesthetic: deep royal-blue background, subtle grid, technical lines, dimension markers, and coordinate stamps
-- [x] Visual richness with member photos on every view and blueprint schematic accents
-- [x] Vitest test suite covering 3x5 tree constraints, placement logic, duplicate prevention, and random stacking
+- [x] Update database schema to support position locking (`isLocked`), saved chart snapshots (`saved_charts`), activity log (`activity_logs`), and chart configuration settings
+- [x] Update backend tRPC routers for toggling position locks, saving/loading charts, logging activities, and chart settings
+- [x] Build dark navy left sidebar (`#0d1726`) with gold logo, navigation items (View Chart, Manage Members, Random Stack, Auto-Fill, Saved Charts, Import/Export, Chart Settings), and mountain graphic badge
+- [x] Build top navigation bar with section indicator, tabs (Dashboard, Organization, Members, Tools, Reports, Settings), global search, notifications counter, and administrator profile
+- [x] Redesign Organization workspace with light theme (`bg-[#f4f7fb]`), metric pills (11 Members, 4 Open, 73% Completion), and Save Chart button
+- [x] Build 3×5 interactive tree canvas matching reference:
+  - Gold Level 0 Apex card for Mr. Curtis with crown icon and PV500
+  - Blue Level 1 header cards for DJ Sterling, Sarah Jenkins, and Marcus Vance with 3/3 Legs count
+  - Level 2 cards for Emily Watson, Chris Evans, Hannah Abbott, David Miller, John Reynolds, Tyler Brooks, Lisa Chen
+  - Dashed outline Add Member cards for Level 2 - Pos 2 and Level 2 - Pos 3
+  - Levels selector pills [1] [2] [3] [4] [5]
+  - Action bar: [Random Stack], [Auto-Fill Next], [Lock Positions], [Clear Chart], [Undo], [Redo]
+- [x] Implement collapsible right-side Master List drawer with search, filter, member cards, Add buttons, "+ Add New Member", and "Import CSV"
+- [x] Build Member Detail slide-out panel with downline relationships, PV, lock toggle, and actions
+- [x] Implement Position Locking functionality: locked positions are immune to Random Stack; visual lock icon on cards
+- [x] Implement Random Stack modal with options: entire chart, specific level, open positions only, or beneath selected member, respecting locks
+- [x] Implement Auto-Fill Next with highlight animation on newly filled slot
+- [x] Implement Undo / Redo action history for chart operations
+- [x] Build Organization Metrics, Quick Actions, and Chart Information summary cards below tree
+- [x] Build executive Dashboard view with metrics, completion rate, recent activity, and rank distribution
+- [x] Build Manage Members full table view with search, filter, CSV import/export, and member editor
+- [x] Build Export System: presentation-style clean printable/PDF view without app chrome
+- [x] Build Saved Charts manager (save, load, duplicate, rename)
+- [x] Write Vitest tests covering locking, random stack with locks, saved charts, and auto-fill
+- [x] Verify with browser screenshots and deliver

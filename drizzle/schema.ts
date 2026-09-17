@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -27,6 +27,7 @@ export const organizations = mysqlTable("organizations", {
   matrixDepth: int("matrixDepth").default(5).notNull(),
   blueprintCode: varchar("blueprintCode", { length: 64 }).default("SEC-3X5-ALPHA").notNull(),
   logoUrl: text("logoUrl"),
+  settings: text("settings"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -62,9 +63,39 @@ export const placements = mysqlTable("placements", {
   level: int("level").notNull(), // 0 for root, 1..5
   positionIndex: int("positionIndex").notNull(), // 0, 1, 2
   slotCoordinate: varchar("slotCoordinate", { length: 128 }).notNull(),
+  isLocked: boolean("isLocked").default(false).notNull(),
   placedAt: timestamp("placedAt").defaultNow().notNull(),
   notes: text("notes"),
 });
 
 export type Placement = typeof placements.$inferSelect;
 export type InsertPlacement = typeof placements.$inferInsert;
+
+export const savedCharts = mysqlTable("saved_charts", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  snapshot: text("snapshot").notNull(), // JSON serialized placements
+  totalMembers: int("totalMembers").default(0).notNull(),
+  filledPositions: int("filledPositions").default(0).notNull(),
+  openPositions: int("openPositions").default(0).notNull(),
+  completionRate: int("completionRate").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type SavedChart = typeof savedCharts.$inferSelect;
+export type InsertSavedChart = typeof savedCharts.$inferInsert;
+
+export const activityLogs = mysqlTable("activity_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  user: varchar("user", { length: 255 }).default("Lead Matrix Architect").notNull(),
+  action: text("action").notNull(),
+  type: varchar("type", { length: 64 }).default("general").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type ActivityLog = typeof activityLogs.$inferSelect;
+export type InsertActivityLog = typeof activityLogs.$inferInsert;
