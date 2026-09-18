@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { SPARTAN_EMBLEM_DATA_URI } from "./spartanLogoAssets";
 
 type SpartanBrandProps = {
   compact?: boolean;
@@ -8,74 +9,51 @@ type SpartanBrandProps = {
   onClick?: () => void;
 };
 
-// Clean square emblem icon crop extracted directly from user's high-res asset
-const emblemUrl = "/manus-storage/spartan-emblem_2d346e99.png";
-// Full original graphic with emblem + SPARTAN STACK text lockup
-const fullLogoUrl = "/manus-storage/spartan-stack-logo_2c1af537.png";
-
 export default function SpartanBrand({
   compact = false,
   tone = "dark",
-  showFullLogo = false,
+  showFullLogo: _showFullLogo = false,
   className,
   onClick,
 }: SpartanBrandProps) {
-  if (showFullLogo) {
-    const fullContent = (
-      <img
-        src={fullLogoUrl}
-        alt="Spartan Stack by Spartan Nation"
-        className="h-14 sm:h-16 w-auto aspect-square object-contain shrink-0"
-      />
-    );
-
-    if (!onClick) {
-      return <div className={cn("flex items-center", className)}>{fullContent}</div>;
-    }
-
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={cn("flex items-center outline-none focus-visible:ring-2 focus-visible:ring-[#d3aa54] rounded-lg", className)}
-        aria-label="Spartan Stack home"
-      >
-        {fullContent}
-      </button>
-    );
-  }
-
   const content = (
-    <>
-      <span className="relative flex h-10 w-10 shrink-0 aspect-square overflow-hidden rounded-xl border border-[#d3aa54]/60 bg-black p-0.5 shadow-md">
+    <div className="flex items-center gap-3 select-none">
+      {/* Precision fixed-square container that cannot distort under any flexbox constraint */}
+      <div
+        className="relative shrink-0 rounded-xl border border-[#d3aa54]/70 bg-black p-1 shadow-md flex items-center justify-center overflow-hidden"
+        style={{ width: "42px", height: "42px", minWidth: "42px", minHeight: "42px" }}
+      >
         <img
-          src={emblemUrl}
-          alt="Spartan Stack Crest"
-          className="h-full w-full aspect-square object-contain block"
+          src={SPARTAN_EMBLEM_DATA_URI}
+          alt=""
+          aria-hidden="true"
+          className="w-full h-full object-contain pointer-events-none"
+          style={{ aspectRatio: "1 / 1" }}
         />
-      </span>
+      </div>
+
       {!compact && (
-        <span className="min-w-0 leading-none">
+        <div className="flex flex-col justify-center min-w-0">
           <span
             className={cn(
-              "block text-sm font-extrabold tracking-[0.12em]",
+              "text-sm font-black tracking-[0.14em] uppercase leading-tight font-sans",
               tone === "dark" ? "text-white" : "text-[#14110c]"
             )}
           >
             SPARTAN STACK
           </span>
-          <span className="mt-1 block text-[9px] font-bold tracking-[0.18em] text-[#d3aa54]">
+          <span className="text-[9px] font-extrabold tracking-[0.2em] text-[#d3aa54] uppercase leading-tight mt-0.5">
             BY SPARTAN NATION
           </span>
-        </span>
+        </div>
       )}
-    </>
+    </div>
   );
 
   const brandClassName = cn(
-    "group flex items-center gap-2.5 text-left rounded-lg",
+    "group flex items-center text-left rounded-lg transition-transform",
     onClick &&
-      "outline-none focus-visible:ring-2 focus-visible:ring-[#d3aa54] focus-visible:ring-offset-2 focus-visible:ring-offset-[#0d0d0e]",
+      "outline-none focus-visible:ring-2 focus-visible:ring-[#d3aa54] hover:opacity-90 active:scale-95 cursor-pointer",
     className
   );
 
@@ -95,4 +73,4 @@ export default function SpartanBrand({
   );
 }
 
-export { emblemUrl as SPARTAN_EMBLEM_URL, fullLogoUrl as SPARTAN_FULL_LOGO_URL };
+export { SPARTAN_EMBLEM_DATA_URI as SPARTAN_EMBLEM_URL };
