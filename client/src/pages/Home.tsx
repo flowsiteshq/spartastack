@@ -52,6 +52,13 @@ export default function Home() {
   const [activityDrawerOpen, setActivityDrawerOpen] = useState(false);
   const [importCSVModalOpen, setImportCSVModalOpen] = useState(false);
   const [masterListOpen, setMasterListOpen] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const urlParam = new URLSearchParams(window.location.search).get("sidebar");
+    if (urlParam === "collapsed") return true;
+    if (urlParam === "expanded") return false;
+    return window.localStorage.getItem("spartan-stack-sidebar-collapsed") === "true";
+  });
 
   // Slot placement modal state
   const [placeSlotModalOpen, setPlaceSlotModalOpen] = useState(false);
@@ -91,6 +98,10 @@ export default function Home() {
       setSelectedOrgId(orgs[0].id);
     }
   }, [orgs, selectedOrgId]);
+
+  useEffect(() => {
+    window.localStorage.setItem("spartan-stack-sidebar-collapsed", String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const activeOrgId = selectedOrgId || (orgs && orgs[0]?.id) || 1;
   const activeOrg = orgs?.find((o) => o.id === activeOrgId);
@@ -284,6 +295,8 @@ export default function Home() {
           onSelectView={(v) => setActiveView(v)}
           onOpenRandomStack={() => setRandomModalOpen(true)}
           onOpenAutoFill={() => setAutoFillModalOpen(true)}
+          isCollapsed={sidebarCollapsed}
+          onToggleCollapsed={() => setSidebarCollapsed((current) => !current)}
         />
 
         {/* Center Workspace Content */}
