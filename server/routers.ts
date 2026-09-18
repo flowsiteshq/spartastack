@@ -30,7 +30,7 @@ export const appRouter = router({
         if (process.env.NODE_ENV !== "development") {
           throw new TRPCError({
             code: "FORBIDDEN",
-            message: "Self-issued admin sessions are disabled in production. Authenticate via Manus OAuth.",
+            message: "Self-issued admin sessions are disabled in production. Authenticate with an approved Google account.",
           });
         }
 

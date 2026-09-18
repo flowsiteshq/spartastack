@@ -1,4 +1,4 @@
-import { startLogin } from "@/const";
+import { startGoogleLogin } from "@/const";
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo } from "react";
@@ -9,10 +9,8 @@ type UseAuthOptions = {
 };
 
 export function useAuth(options?: UseAuthOptions) {
-  // Login is started via startLogin() in the effect below, only when we actually
-  // navigate — never during render. startLogin() mints a one-time nonce + writes
-  // the state cookie, so calling it per render would overwrite the cookie and
-  // desync it from an in-flight login's `state`.
+  // Google sign-in is started only when navigation is needed, never during
+  // render. The server mints and binds its one-time state cookie at that time.
   const { redirectOnUnauthenticated = false, redirectPath } = options ?? {};
   const utils = trpc.useUtils();
 
@@ -76,11 +74,11 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (redirectPath && window.location.pathname === redirectPath) return;
 
-    // Navigate at this moment only. startLogin() mints the nonce + cookie itself.
+    // Navigate at this moment only. The server mints the Google state cookie.
     if (redirectPath) {
       window.location.href = redirectPath;
     } else {
-      startLogin();
+      startGoogleLogin();
     }
   }, [
     redirectOnUnauthenticated,

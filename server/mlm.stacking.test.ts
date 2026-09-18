@@ -6,10 +6,10 @@ function createAdminContext(): TrpcContext {
   return {
     user: {
       id: 1,
-      openId: "admin_test",
+      openId: "google_109876543210987654321",
       email: "admin@memberstack.internal",
       name: "Lead Matrix Architect",
-      loginMethod: "admin_portal",
+      loginMethod: "google",
       role: "admin",
       createdAt: new Date(),
       updatedAt: new Date(),

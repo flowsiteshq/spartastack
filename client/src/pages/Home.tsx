@@ -23,6 +23,13 @@ import { MemberWithPlacement } from "../../../server/db";
 
 export default function Home() {
   const { user, loading, isAuthenticated } = useAuth();
+  const authError =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("authError")
+      : null;
+  const forceGatePreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("authPreview") === "true";
   const [activeView, setActiveView] = useState<ActiveView>(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -238,8 +245,10 @@ export default function Home() {
     );
   }
 
-  if (!isAuthenticated || !user) {
-    return <AdminAuthGate />;
+  const requiresGoogleSignIn = import.meta.env.PROD && user?.loginMethod !== "google";
+
+  if (forceGatePreview || !isAuthenticated || !user || user.role !== "admin" || requiresGoogleSignIn) {
+    return <AdminAuthGate errorCode={authError || (requiresGoogleSignIn ? "access_denied" : null)} />;
   }
 
   // Presentation Export view replaces entire chrome for clean printing

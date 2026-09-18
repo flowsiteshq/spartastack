@@ -31,7 +31,21 @@ export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
 
-    if (!ctx.user || ctx.user.role !== 'admin') {
+    const isGoogleAdministrator =
+      ctx.user?.role === "admin" &&
+      ctx.user.loginMethod === "google" &&
+      ctx.user.openId.startsWith("google_");
+    const isLocalDevelopmentAdministrator =
+      process.env.NODE_ENV === "development" &&
+      ctx.user?.role === "admin" &&
+      ctx.user.openId === "admin_workspace_master";
+    const isTestFixture = process.env.NODE_ENV === "test";
+
+    // Production access is never inherited from a prior Manus or preview
+    // session. Only an approved, verified Google OAuth identity can operate
+    // the administrator APIs. The narrow development exception preserves the
+    // local demo workflow; Vitest uses explicit context fixtures.
+    if (!ctx.user || ctx.user.role !== 'admin' || (!isGoogleAdministrator && !isLocalDevelopmentAdministrator && !isTestFixture)) {
       throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
     }
 

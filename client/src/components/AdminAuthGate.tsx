@@ -1,147 +1,150 @@
 import { Button } from "@/components/ui/button";
-import { startLogin } from "@/const";
-import { trpc } from "@/lib/trpc";
-import { Cpu, Lock, Shield, Sparkles } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { startGoogleLogin } from "@/const";
+import { AlertCircle, ArrowRight, CheckCircle2, LockKeyhole, ShieldCheck, UsersRound } from "lucide-react";
 
 interface AdminAuthGateProps {
-  onAuthenticated?: () => void;
+  errorCode?: string | null;
 }
 
-export default function AdminAuthGate({ onAuthenticated }: AdminAuthGateProps) {
-  const [loadingDemo, setLoadingDemo] = useState(false);
-  const utils = trpc.useUtils();
+const authErrors: Record<string, { title: string; detail: string }> = {
+  google_cancelled: {
+    title: "Sign-in was cancelled",
+    detail: "Choose an approved Google account to continue.",
+  },
+  access_denied: {
+    title: "This Google account is not authorized",
+    detail: "Use an administrator account or ask an existing administrator to add your email.",
+  },
+  invalid_google_state: {
+    title: "Your sign-in session expired",
+    detail: "For your security, please start the Google sign-in process again.",
+  },
+  google_signin_failed: {
+    title: "Google sign-in could not be completed",
+    detail: "Please try again. If the issue continues, review the Google OAuth configuration.",
+  },
+  google_not_configured: {
+    title: "Google sign-in is still being configured",
+    detail: "The administrator needs to finish the secure Google OAuth setup before access can be granted.",
+  },
+};
 
-  const loginAsAdminMutation = trpc.auth.loginAsAdmin.useMutation({
-    onSuccess: (data) => {
-      toast.success("Administrator clearance granted", {
-        description: `Logged in as ${data.user?.name || "System Administrator"}`,
-      });
-      utils.auth.me.invalidate();
-      if (onAuthenticated) onAuthenticated();
-    },
-    onError: (err) => {
-      toast.error("Authentication failed", { description: err.message });
-    },
-  });
-
-  const handleAdminQuickLogin = async () => {
-    setLoadingDemo(true);
-    try {
-      await loginAsAdminMutation.mutateAsync({
-        adminName: "Lead Matrix Architect",
-      });
-    } finally {
-      setLoadingDemo(false);
-    }
-  };
+export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
+  const message = errorCode ? authErrors[errorCode] : undefined;
 
   return (
-    <div className="min-h-screen blueprint-canvas flex items-center justify-center p-4">
-      {/* Ambient CAD Corner Markers */}
-      <div className="fixed top-6 left-6 text-cyan-400/60 font-mono text-xs tracking-wider">
-        SEC-00 // AUTH_GATEWAY // ARCH_3X5
-      </div>
-      <div className="fixed top-6 right-6 text-cyan-400/60 font-mono text-xs tracking-wider">
-        CAD_SPEC: MIL-STD-3X5 // REV-4.2
-      </div>
-      <div className="fixed bottom-6 left-6 text-cyan-400/60 font-mono text-xs tracking-wider">
-        GRID: 24MM / SCALE: 1:1
-      </div>
-      <div className="fixed bottom-6 right-6 text-cyan-400/60 font-mono text-xs tracking-wider">
-        CLEARANCE: LVL-5 ADMINISTRATOR
+    <main className="min-h-screen bg-[#f6f8fc] p-4 sm:p-6 lg:p-8 flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
+        <div className="absolute -top-36 right-[20%] h-[30rem] w-[30rem] rounded-full bg-blue-100/70 blur-3xl" />
+        <div className="absolute -bottom-48 left-[8%] h-[32rem] w-[32rem] rounded-full bg-amber-100/55 blur-3xl" />
       </div>
 
-      <div className="max-w-md w-full relative">
-        {/* Outer CAD Border with Corner Crosshairs */}
-        <div className="border border-cyan-400/40 bg-[#0a1e38]/95 p-8 shadow-2xl relative">
-          {/* Corner Crosshairs */}
-          <span className="absolute -top-2.5 -left-2.5 text-cyan-400 font-mono text-sm">+</span>
-          <span className="absolute -top-2.5 -right-2.5 text-cyan-400 font-mono text-sm">+</span>
-          <span className="absolute -bottom-2.5 -left-2.5 text-cyan-400 font-mono text-sm">+</span>
-          <span className="absolute -bottom-2.5 -right-2.5 text-cyan-400 font-mono text-sm">+</span>
-
-          {/* Technical Blueprint Header Stamp */}
-          <div className="border-b border-cyan-400/20 pb-4 mb-6">
-            <div className="flex items-center justify-between text-[11px] font-mono text-cyan-300 uppercase tracking-widest mb-1">
-              <span className="flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5 text-cyan-400" /> Secure Admin Workspace
-              </span>
-              <span>SPEC-3X5</span>
+      <section className="relative z-10 w-full max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_28px_80px_-32px_rgba(15,23,42,0.32)] grid lg:grid-cols-[0.97fr_1.03fr]">
+        <div className="p-7 sm:p-10 lg:p-14 flex flex-col justify-between min-h-[560px]">
+          <div>
+            <div className="inline-flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 text-sm font-extrabold tracking-tight text-slate-950 shadow-sm">
+                MS
+              </div>
+              <div>
+                <p className="text-sm font-extrabold tracking-[0.08em] text-slate-900">MEMBERSTACK</p>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Plan with confidence</p>
+              </div>
             </div>
-            <h1 className="text-2xl font-bold tracking-tight text-white font-display">
-              MemberStack Planner
-            </h1>
-            <p className="text-xs text-slate-300 mt-1 font-mono">
-              MLM Downline Architecture & Matrix Placement Engine
-            </p>
+
+            <div className="mt-14 max-w-md">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
+                <ShieldCheck className="h-3.5 w-3.5" />
+                Secure administrator workspace
+              </div>
+              <h1 className="text-4xl font-extrabold leading-[1.08] tracking-[-0.045em] text-slate-950 sm:text-5xl">
+                Your organization, clearly connected.
+              </h1>
+              <p className="mt-5 text-base leading-7 text-slate-500">
+                Sign in to manage your member directory, place teams in the 3 × 5 chart, and preserve every planning decision.
+              </p>
+            </div>
+
+            {message && (
+              <div role="alert" className="mt-7 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-950">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <div>
+                  <p className="font-bold">{message.title}</p>
+                  <p className="mt-0.5 leading-5 text-amber-800">{message.detail}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-8 max-w-md">
+              <Button
+                onClick={startGoogleLogin}
+                className="group h-13 w-full rounded-xl border border-slate-200 bg-white px-5 text-[15px] font-bold text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md focus-visible:ring-blue-500"
+              >
+                <GoogleMark />
+                Continue with Google
+                <ArrowRight className="ml-auto h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5" />
+              </Button>
+              <p className="mt-4 flex items-start gap-2 px-1 text-xs leading-5 text-slate-400">
+                <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                Access is limited to verified Google accounts approved by your organization’s administrator.
+              </p>
+            </div>
           </div>
 
-          {/* Blueprint Photo Visual (photos on every page preference) */}
-          <div className="relative mb-6 border border-white/20 overflow-hidden rounded bg-[#07172c]">
-            <img
-              src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=800&q=80"
-              alt="Architectural Blueprint Organization Planning"
-              className="w-full h-36 object-cover opacity-60 mix-blend-luminosity hover:opacity-80 transition-opacity"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#091a30] via-transparent to-transparent" />
-            <div className="absolute bottom-2 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-cyan-300">
-              <span>SYSTEM ACCESS: RESTRICTED</span>
-              <span className="border border-cyan-400/40 px-1.5 py-0.5 bg-[#091a30]/80">
-                VERIFIED ADMINS ONLY
-              </span>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <p className="text-xs text-slate-300 leading-relaxed font-sans">
-              This system governs organization hierarchies, master member directories, and
-              cryptographically validated 3-leg × 5-level matrix placements. Please authorize to enter
-              the workspace.
-            </p>
-
-            {/* Instant Admin Login Button */}
-            <Button
-              onClick={handleAdminQuickLogin}
-              disabled={loadingDemo}
-              className="w-full h-11 bg-cyan-500 hover:bg-cyan-400 text-[#07192f] font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 border border-cyan-300 shadow-[0_0_15px_rgba(56,189,248,0.3)]"
-            >
-              <Shield className="w-4 h-4" />
-              {loadingDemo ? "Validating Admin Credentials..." : "Enter Workspace as Administrator"}
-            </Button>
-
-            <div className="relative my-4 flex items-center justify-center">
-              <div className="border-t border-white/15 w-full absolute" />
-              <span className="bg-[#0a1e38] px-3 text-[10px] font-mono text-slate-400 uppercase relative">
-                OR VIA SINGLE SIGN-ON
-              </span>
-            </div>
-
-            {/* OAuth Sign-In */}
-            <Button
-              onClick={() => startLogin()}
-              variant="outline"
-              className="w-full h-10 border-white/25 hover:border-cyan-400 bg-transparent text-white hover:text-cyan-200 text-xs font-mono tracking-wider uppercase flex items-center justify-center gap-2"
-            >
-              <Lock className="w-3.5 h-3.5 text-cyan-400" />
-              Manus OAuth Portal
-            </Button>
-          </div>
-
-          {/* Blueprint Title Block Footer */}
-          <div className="mt-8 pt-4 border-t border-white/10 grid grid-cols-2 gap-2 text-[10px] font-mono text-slate-400">
-            <div>
-              <span className="text-slate-500 block">AUTH POLICY</span>
-              <span>ADMINISTRATOR</span>
-            </div>
-            <div className="text-right">
-              <span className="text-slate-500 block">TOPOLOGY</span>
-              <span>3-LEG / 5-LEVEL</span>
-            </div>
+          <div className="mt-12 flex items-center gap-3 border-t border-slate-100 pt-6 text-xs text-slate-400">
+            <LockKeyhole className="h-4 w-4 text-slate-400" />
+            <span>Protected access for authorized organization administrators.</span>
           </div>
         </div>
-      </div>
-    </div>
+
+        <aside className="relative hidden overflow-hidden bg-[#071a33] px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
+          <img
+            src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1500&q=85"
+            alt="Colleagues collaborating around a shared plan"
+            className="absolute inset-0 h-full w-full object-cover opacity-25"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(7,26,51,0.9)_0%,rgba(13,48,88,0.87)_56%,rgba(7,26,51,0.95)_100%)]" />
+          <div className="absolute -right-24 top-20 h-72 w-72 rounded-full border border-blue-300/15" />
+          <div className="absolute -right-8 top-36 h-48 w-48 rounded-full border border-blue-300/15" />
+
+          <div className="relative">
+            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-100 backdrop-blur-sm">
+              <UsersRound className="h-3.5 w-3.5" />
+              Built for connected teams
+            </span>
+            <h2 className="mt-7 max-w-sm text-3xl font-bold leading-tight tracking-[-0.035em]">
+              See the whole team. Make every placement count.
+            </h2>
+          </div>
+
+          <div className="relative space-y-4">
+            {[
+              ["Live organization chart", "See placements, openings, and lock states at a glance."],
+              ["Controlled planning", "Save versions before trying a new stacking strategy."],
+              ["Administrator safeguards", "Only assigned administrators can make changes."],
+            ].map(([title, detail]) => (
+              <div key={title} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur-sm">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                <div>
+                  <p className="text-sm font-bold text-white">{title}</p>
+                  <p className="mt-1 text-xs leading-5 text-blue-100/75">{detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+      </section>
+    </main>
+  );
+}
+
+function GoogleMark() {
+  return (
+    <svg aria-hidden="true" className="h-5 w-5 shrink-0" viewBox="0 0 24 24">
+      <path fill="#4285F4" d="M21.8 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.5a4.7 4.7 0 0 1-2.04 3.08v2.52h3.31c1.94-1.79 3.03-4.42 3.03-7.43Z" />
+      <path fill="#34A853" d="M12 22c2.75 0 5.06-.91 6.75-2.46l-3.31-2.52c-.92.62-2.09.99-3.44.99-2.65 0-4.9-1.79-5.7-4.2H2.88v2.6A10.2 10.2 0 0 0 12 22Z" />
+      <path fill="#FBBC05" d="M6.3 13.81A6.13 6.13 0 0 1 5.98 12c0-.63.11-1.24.32-1.81v-2.6H2.88A10 10 0 0 0 1.8 12c0 1.61.39 3.13 1.08 4.41l3.42-2.6Z" />
+      <path fill="#EA4335" d="M12 5.99c1.5 0 2.85.52 3.91 1.53l2.93-2.93C17.05 2.93 14.74 2 12 2a10.2 10.2 0 0 0-9.12 5.59l3.42 2.6c.8-2.41 3.05-4.2 5.7-4.2Z" />
+    </svg>
   );
 }
