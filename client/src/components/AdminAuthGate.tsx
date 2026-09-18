@@ -43,7 +43,7 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
       <section className="relative z-10 w-full max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_28px_80px_-32px_rgba(15,23,42,0.32)] grid lg:grid-cols-[0.97fr_1.03fr]">
         <div className="p-7 sm:p-10 lg:p-14 flex flex-col justify-between min-h-[560px]">
           <div>
-            <SpartanBrand tone="light" />
+            <SpartanBrand tone="light" className="mb-4" />
 
             <div className="mt-14 max-w-md">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#f6edda] px-3 py-1.5 text-xs font-bold text-[#76521d]">
