@@ -233,6 +233,10 @@ export default function SaaSNavigation({
                 <Home className="w-4 h-4 mr-2 text-[#9d2025]" />
                 Executive Dashboard
               </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => onSelectView("messages")} className="cursor-pointer text-xs">
+                <MessageSquare className="w-4 h-4 mr-2 text-[#9d2025]" />
+                Messages & Outreach
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onSelectView("settings")} className="cursor-pointer text-xs">
                 <Sliders className="w-4 h-4 mr-2 text-slate-500" />
                 Chart Configuration
