@@ -5,6 +5,7 @@ import {
   activityLogs,
   CommunicationLog,
   communicationLogs,
+  InsertNetworkMembership,
   InsertActivityLog,
   InsertMember,
   InsertOrganization,
@@ -13,6 +14,8 @@ import {
   InsertUser,
   Member,
   members,
+  NetworkMembership,
+  networkMemberships,
   Organization,
   organizations,
   Placement,
@@ -52,7 +55,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     name: user.name ?? null,
     email: user.email ?? null,
     loginMethod: user.loginMethod ?? null,
-    role: user.role ?? "admin",
+    role: user.role ?? "user",
     lastSignedIn: user.lastSignedIn ?? new Date(),
   };
 
@@ -60,7 +63,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     set: {
       name: values.name,
       email: values.email,
-      role: values.role,
+      loginMethod: values.loginMethod,
+      ...(user.role ? { role: values.role } : {}),
       lastSignedIn: values.lastSignedIn,
     },
   });
@@ -154,6 +158,7 @@ export async function deleteOrganization(id: number): Promise<void> {
   if (!db) throw new Error("Database unavailable");
   await db.delete(placements).where(eq(placements.orgId, id));
   await db.delete(members).where(eq(members.orgId, id));
+  await db.delete(networkMemberships).where(eq(networkMemberships.orgId, id));
   await db.delete(savedCharts).where(eq(savedCharts.orgId, id));
   await db.delete(communicationLogs).where(eq(communicationLogs.orgId, id));
   await db.delete(activityLogs).where(eq(activityLogs.orgId, id));
@@ -413,6 +418,7 @@ export async function deleteMember(id: number): Promise<void> {
   if (placed.length > 0) {
     await unstackPlacementAndDescendants(placed[0].id);
   }
+  await db.delete(networkMemberships).where(eq(networkMemberships.memberId, id));
   await db.delete(communicationLogs).where(eq(communicationLogs.memberId, id));
   await db.delete(members).where(eq(members.id, id));
   if (m) {
@@ -521,6 +527,317 @@ export async function getCommunicationHistory(
     .limit(filter?.limit ?? 100);
 
   return rows;
+}
+
+// ========================================================
+// Verified Member Network Access
+// ========================================================
+
+export type NetworkAccessLevel = "limited" | "full";
+export type NetworkMembershipStatus = "pending" | "active" | "revoked";
+
+export type NetworkMatch = {
+  orgId: number;
+  orgName: string;
+  orgCode: string;
+  memberId: number;
+  memberFirstName: string;
+  memberLastName: string;
+  memberRank: string;
+  memberAvatarUrl: string | null;
+  matchMethod: "email" | "phone";
+};
+
+export async function isOrganizationOwner(orgId: number, userId: number): Promise<boolean> {
+  const org = await getOrganizationById(orgId);
+  return Boolean(org?.ownerUserId && org.ownerUserId === userId);
+}
+
+export async function claimUnownedOrganizationsForCreator(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .update(organizations)
+    .set({ ownerUserId: userId })
+    .where(isNull(organizations.ownerUserId));
+}
+
+export async function findEmailNetworkMatches(email: string): Promise<NetworkMatch[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!normalizedEmail) return [];
+
+  const rows = await db
+    .select({
+      orgId: organizations.id,
+      orgName: organizations.name,
+      orgCode: organizations.code,
+      memberId: members.id,
+      memberFirstName: members.firstName,
+      memberLastName: members.lastName,
+      memberRank: members.rank,
+      memberAvatarUrl: members.avatarUrl,
+    })
+    .from(members)
+    .innerJoin(organizations, eq(members.orgId, organizations.id))
+    .where(sql`LOWER(${members.email}) = ${normalizedEmail}`);
+
+  return rows.map((row) => ({ ...row, matchMethod: "email" as const }));
+}
+
+export async function findPhoneNetworkMatches(phone: string): Promise<NetworkMatch[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const normalizedPhone = phone.replace(/\D/g, "");
+  if (normalizedPhone.length < 7) return [];
+
+  const rows = await db
+    .select({
+      orgId: organizations.id,
+      orgName: organizations.name,
+      orgCode: organizations.code,
+      memberId: members.id,
+      memberFirstName: members.firstName,
+      memberLastName: members.lastName,
+      memberRank: members.rank,
+      memberAvatarUrl: members.avatarUrl,
+      memberPhone: members.phone,
+    })
+    .from(members)
+    .innerJoin(organizations, eq(members.orgId, organizations.id));
+
+  return rows
+    .filter((row) => (row.memberPhone || "").replace(/\D/g, "") === normalizedPhone)
+    .map(({ memberPhone: _memberPhone, ...row }) => ({ ...row, matchMethod: "phone" as const }));
+}
+
+export async function getNetworkMembershipForUser(orgId: number, userId: number): Promise<NetworkMembership | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(networkMemberships)
+    .where(and(eq(networkMemberships.orgId, orgId), eq(networkMemberships.userId, userId)))
+    .limit(1);
+  return result[0];
+}
+
+export async function createOrUpdateNetworkMembership(input: {
+  orgId: number;
+  memberId: number;
+  userId: number;
+  matchMethod: "email" | "phone";
+  status: NetworkMembershipStatus;
+  accessLevel?: NetworkAccessLevel;
+  approvedByUserId?: number | null;
+}): Promise<NetworkMembership> {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+
+  const member = await getMemberById(input.memberId);
+  if (!member || member.orgId !== input.orgId) {
+    throw new Error("The selected member does not belong to this network");
+  }
+
+  const existing = await getNetworkMembershipForUser(input.orgId, input.userId);
+  const now = new Date();
+  const values: InsertNetworkMembership = {
+    orgId: input.orgId,
+    memberId: input.memberId,
+    userId: input.userId,
+    matchMethod: input.matchMethod,
+    status: input.status,
+    accessLevel: input.accessLevel ?? "limited",
+    approvedByUserId: input.approvedByUserId ?? null,
+    approvedAt: input.status === "active" ? now : null,
+  };
+
+  if (existing) {
+    await db
+      .update(networkMemberships)
+      .set({
+        memberId: values.memberId,
+        matchMethod: values.matchMethod,
+        status: values.status,
+        accessLevel: values.accessLevel,
+        approvedByUserId: values.approvedByUserId,
+        approvedAt: values.approvedAt,
+      })
+      .where(eq(networkMemberships.id, existing.id));
+    const updated = await db.select().from(networkMemberships).where(eq(networkMemberships.id, existing.id)).limit(1);
+    if (!updated[0]) throw new Error("Failed to update network access");
+    return updated[0];
+  }
+
+  const [result] = await db.insert(networkMemberships).values(values);
+  const created = await db.select().from(networkMemberships).where(eq(networkMemberships.id, result.insertId)).limit(1);
+  if (!created[0]) throw new Error("Failed to create network access");
+  return created[0];
+}
+
+export async function joinNetworkByVerifiedEmail(orgId: number, user: User): Promise<NetworkMembership> {
+  if (!user.email) throw new Error("A verified Google email address is required to join a network");
+  const matches = await findEmailNetworkMatches(user.email);
+  const match = matches.find((candidate) => candidate.orgId === orgId);
+  if (!match) throw new Error("No member record matched your verified Google email in this network");
+
+  const membership = await createOrUpdateNetworkMembership({
+    orgId,
+    memberId: match.memberId,
+    userId: user.id,
+    matchMethod: "email",
+    status: "active",
+    accessLevel: "limited",
+    approvedByUserId: null,
+  });
+
+  await logActivity(orgId, user.name || user.email, "Joined the network through verified email match", "network_join_email");
+  return membership;
+}
+
+export async function requestNetworkJoinByPhone(orgId: number, phone: string, user: User): Promise<NetworkMembership> {
+  const matches = await findPhoneNetworkMatches(phone);
+  const match = matches.find((candidate) => candidate.orgId === orgId);
+  if (!match) throw new Error("No member record matched that phone number in this network");
+
+  const membership = await createOrUpdateNetworkMembership({
+    orgId,
+    memberId: match.memberId,
+    userId: user.id,
+    matchMethod: "phone",
+    status: "pending",
+    accessLevel: "limited",
+  });
+
+  await logActivity(orgId, user.name || user.email || "Network member", "Requested network access using phone match", "network_join_phone_request");
+  return membership;
+}
+
+export async function getUserNetworkMemberships(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: networkMemberships.id,
+      orgId: networkMemberships.orgId,
+      memberId: networkMemberships.memberId,
+      status: networkMemberships.status,
+      accessLevel: networkMemberships.accessLevel,
+      matchMethod: networkMemberships.matchMethod,
+      createdAt: networkMemberships.createdAt,
+      orgName: organizations.name,
+      orgCode: organizations.code,
+      memberFirstName: members.firstName,
+      memberLastName: members.lastName,
+      memberRank: members.rank,
+      memberAvatarUrl: members.avatarUrl,
+    })
+    .from(networkMemberships)
+    .innerJoin(organizations, eq(networkMemberships.orgId, organizations.id))
+    .innerJoin(members, eq(networkMemberships.memberId, members.id))
+    .where(eq(networkMemberships.userId, userId))
+    .orderBy(desc(networkMemberships.updatedAt));
+}
+
+export async function getOwnerNetworkMemberships(orgId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: networkMemberships.id,
+      orgId: networkMemberships.orgId,
+      memberId: networkMemberships.memberId,
+      userId: networkMemberships.userId,
+      status: networkMemberships.status,
+      accessLevel: networkMemberships.accessLevel,
+      matchMethod: networkMemberships.matchMethod,
+      createdAt: networkMemberships.createdAt,
+      approvedAt: networkMemberships.approvedAt,
+      memberFirstName: members.firstName,
+      memberLastName: members.lastName,
+      memberEmail: members.email,
+      memberPhone: members.phone,
+      memberRank: members.rank,
+      memberAvatarUrl: members.avatarUrl,
+      userName: users.name,
+      userEmail: users.email,
+    })
+    .from(networkMemberships)
+    .innerJoin(members, eq(networkMemberships.memberId, members.id))
+    .leftJoin(users, eq(networkMemberships.userId, users.id))
+    .where(eq(networkMemberships.orgId, orgId))
+    .orderBy(desc(networkMemberships.updatedAt));
+}
+
+export async function updateNetworkMembershipByOwner(input: {
+  orgId: number;
+  membershipId: number;
+  status?: NetworkMembershipStatus;
+  accessLevel?: NetworkAccessLevel;
+  ownerUserId: number;
+}): Promise<NetworkMembership> {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  if (!(await isOrganizationOwner(input.orgId, input.ownerUserId))) {
+    throw new Error("Only the organization creator can change member visibility privileges");
+  }
+
+  const existing = await db
+    .select()
+    .from(networkMemberships)
+    .where(and(eq(networkMemberships.id, input.membershipId), eq(networkMemberships.orgId, input.orgId)))
+    .limit(1);
+  if (!existing[0]) throw new Error("Network membership not found");
+
+  const nextStatus = input.status ?? existing[0].status;
+  const becameActive = nextStatus === "active" && existing[0].status !== "active";
+  await db
+    .update(networkMemberships)
+    .set({
+      status: nextStatus,
+      accessLevel: input.accessLevel ?? existing[0].accessLevel,
+      approvedByUserId: nextStatus === "active" ? input.ownerUserId : existing[0].approvedByUserId,
+      approvedAt: nextStatus === "active" && (becameActive || !existing[0].approvedAt) ? new Date() : existing[0].approvedAt,
+    })
+    .where(eq(networkMemberships.id, input.membershipId));
+
+  const updated = await db.select().from(networkMemberships).where(eq(networkMemberships.id, input.membershipId)).limit(1);
+  if (!updated[0]) throw new Error("Failed to update member visibility privileges");
+  await logActivity(input.orgId, "Organization Creator", `Updated member portal access to ${updated[0].accessLevel} / ${updated[0].status}`, "network_access_updated");
+  return updated[0];
+}
+
+export async function getMemberPortalData(orgId: number, userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const membership = await getNetworkMembershipForUser(orgId, userId);
+  if (!membership || membership.status !== "active") {
+    throw new Error("You do not have active access to this network");
+  }
+
+  const member = await getMemberById(membership.memberId);
+  if (!member) throw new Error("The linked member profile was not found");
+  const allPlacements = await getAllPlacementsForOrg(orgId);
+  const placement = allPlacements.find((item) => item.memberId === member.id) || null;
+  const allMembers = await db.select().from(members).where(eq(members.orgId, orgId));
+  const memberById = new Map(allMembers.map((item) => [item.id, item]));
+  const parentPlacement = placement?.parentId ? allPlacements.find((item) => item.id === placement.parentId) || null : null;
+  const childPlacements = placement ? allPlacements.filter((item) => item.parentId === placement.id) : [];
+
+  const upline = parentPlacement ? memberById.get(parentPlacement.memberId) || null : null;
+  const downline = childPlacements
+    .map((item) => memberById.get(item.memberId))
+    .filter((item): item is Member => Boolean(item));
+
+  return {
+    membership,
+    member,
+    placement,
+    upline,
+    downline,
+    fullTree: membership.accessLevel === "full" ? await getTreeStructure(orgId) : null,
+  };
 }
 
 // ========================================================

@@ -13,8 +13,8 @@ const authErrors: Record<string, { title: string; detail: string }> = {
     detail: "Choose an approved Google account to continue.",
   },
   access_denied: {
-    title: "This Google account is not authorized",
-    detail: "Use an administrator account or ask an existing administrator to add your email.",
+    title: "This Google account could not be verified",
+    detail: "Use a verified Google account, then match your email or phone number to an existing network profile.",
   },
   invalid_google_state: {
     title: "Your sign-in session expired",
@@ -48,13 +48,13 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
             <div className="mt-14 max-w-md">
               <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#f6edda] px-3 py-1.5 text-xs font-bold text-[#76521d]">
                 <ShieldCheck className="h-3.5 w-3.5" />
-                Secure administrator workspace
+                Secure network workspace
               </div>
               <h1 className="text-4xl font-extrabold leading-[1.08] tracking-[-0.045em] text-slate-950 sm:text-5xl">
-                Your organization, clearly connected.
+                Your network, securely connected.
               </h1>
               <p className="mt-5 text-base leading-7 text-slate-500">
-                Sign in to manage your member directory, place teams in the 3 × 5 chart, and preserve every planning decision.
+                Sign in with Google to manage an organization or match your member profile to an existing network.
               </p>
             </div>
 
@@ -79,14 +79,14 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
               </Button>
               <p className="mt-4 flex items-start gap-2 px-1 text-xs leading-5 text-slate-400">
                 <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                Access is limited to verified Google accounts approved by your organization’s administrator.
+                Administrators receive management tools. Members are matched to an existing profile with privacy-first, limited visibility by default.
               </p>
             </div>
           </div>
 
           <div className="mt-12 flex items-center gap-3 border-t border-slate-100 pt-6 text-xs text-slate-400">
             <LockKeyhole className="h-4 w-4 text-slate-400" />
-            <span>Protected access for authorized organization administrators.</span>
+            <span>Protected Google access for organization creators and verified members.</span>
           </div>
         </div>
 

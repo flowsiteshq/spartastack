@@ -1,4 +1,4 @@
-import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, varchar } from "drizzle-orm/mysql-core";
+import { boolean, int, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
 /**
  * Core user table backing auth flow.
@@ -9,7 +9,7 @@ export const users = mysqlTable("users", {
   name: text("name"),
   email: varchar("email", { length: 320 }),
   loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("admin").notNull(),
+  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
@@ -28,6 +28,7 @@ export const organizations = mysqlTable("organizations", {
   blueprintCode: varchar("blueprintCode", { length: 64 }).default("SEC-3X5-ALPHA").notNull(),
   logoUrl: text("logoUrl"),
   settings: text("settings"),
+  ownerUserId: int("ownerUserId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -54,6 +55,35 @@ export const members = mysqlTable("members", {
 
 export type Member = typeof members.$inferSelect;
 export type InsertMember = typeof members.$inferInsert;
+
+/**
+ * Connects a verified application account to its matching directory member.
+ * Limited members can view only their immediate upline and direct downline;
+ * organization owners may explicitly grant full-network visibility.
+ */
+export const networkMemberships = mysqlTable(
+  "network_memberships",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    orgId: int("orgId").notNull(),
+    memberId: int("memberId").notNull(),
+    userId: int("userId").notNull(),
+    accessLevel: mysqlEnum("accessLevel", ["limited", "full"]).default("limited").notNull(),
+    status: mysqlEnum("status", ["pending", "active", "revoked"]).default("pending").notNull(),
+    matchMethod: mysqlEnum("matchMethod", ["email", "phone"]).notNull(),
+    approvedByUserId: int("approvedByUserId"),
+    approvedAt: timestamp("approvedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  (table) => [
+    uniqueIndex("network_memberships_org_user_unique").on(table.orgId, table.userId),
+    uniqueIndex("network_memberships_member_user_unique").on(table.memberId, table.userId),
+  ]
+);
+
+export type NetworkMembership = typeof networkMemberships.$inferSelect;
+export type InsertNetworkMembership = typeof networkMemberships.$inferInsert;
 
 export const placements = mysqlTable("placements", {
   id: int("id").autoincrement().primaryKey(),

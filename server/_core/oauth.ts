@@ -71,9 +71,9 @@ async function getGoogleProfile(accessToken: string) {
 }
 
 /**
- * Registers only the application-owned Google OAuth flow. The legacy Manus
- * OAuth callback is intentionally not registered: access is now granted only
- * to verified Google accounts in GOOGLE_ADMIN_EMAILS.
+ * Registers the application-owned Google OAuth flow. Verified Google accounts
+ * may enter the privacy-first member matching flow; accounts in
+ * GOOGLE_ADMIN_EMAILS receive administrator privileges.
  */
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/auth/google", (req: Request, res: Response) => {
@@ -130,18 +130,19 @@ export function registerOAuthRoutes(app: Express) {
       );
       const profile = await getGoogleProfile(accessToken);
 
-      if (!profile || !isAuthorizedGoogleAdministrator(profile, config)) {
+      if (!profile) {
         redirectToLoginError(res, "access_denied");
         return;
       }
 
+      const isAdministrator = isAuthorizedGoogleAdministrator(profile, config);
       const openId = `google_${profile.sub}`;
       await db.upsertUser({
         openId,
         name: profile.name,
         email: profile.email,
         loginMethod: "google",
-        role: "admin",
+        role: isAdministrator ? "admin" : "user",
         lastSignedIn: new Date(),
       });
 

@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import NetworkAccessManager from "@/components/NetworkAccessManager";
 import { Textarea } from "@/components/ui/textarea";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Award, Plus, RotateCcw, Save, Settings, Sliders, Trash2 } from "lucide-react";
@@ -537,6 +538,8 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
           ))}
         </div>
       </div>
+
+      <NetworkAccessManager orgId={orgId} />
     </div>
   );
 }

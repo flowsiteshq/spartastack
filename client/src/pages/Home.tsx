@@ -4,6 +4,7 @@ import AdminAuthGate from "@/components/AdminAuthGate";
 import ChartSettingsView from "@/components/ChartSettingsView";
 import ImportCSVModal from "@/components/ImportCSVModal";
 import MemberCommunicationDialog, { CommunicationMember } from "@/components/MemberCommunicationDialog";
+import MemberNetworkAccess from "@/components/MemberNetworkAccess";
 import MessagesWorkspaceView from "@/components/MessagesWorkspaceView";
 import MasterListDrawer from "@/components/MasterListDrawer";
 import MemberDetailDrawer from "@/components/MemberDetailDrawer";
@@ -25,7 +26,7 @@ import { Member } from "../../../drizzle/schema";
 import { MemberWithPlacement } from "../../../server/db";
 
 export default function Home() {
-  const { user, loading, isAuthenticated } = useAuth();
+  const { user, loading, isAuthenticated, logout } = useAuth();
   const authError =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("authError")
@@ -33,6 +34,12 @@ export default function Home() {
   const forceGatePreview =
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("authPreview") === "true";
+  const forceMemberJoinPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("previewJoin") === "1";
+  const forceMemberPortalPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("previewPortal") === "1";
   const [activeView, setActiveView] = useState<ActiveView>(() => {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
@@ -94,7 +101,10 @@ export default function Home() {
   const utils = trpc.useUtils();
 
   // Fetch organizations
-  const { data: orgs, isLoading: isOrgsLoading } = trpc.org.list.useQuery();
+  const isAdministrator = user?.role === "admin";
+  const { data: orgs, isLoading: isOrgsLoading } = trpc.org.list.useQuery(undefined, {
+    enabled: Boolean(isAdministrator),
+  });
 
   useEffect(() => {
     if (orgs && orgs.length > 0 && selectedOrgId === null) {
@@ -156,13 +166,13 @@ export default function Home() {
   // Fetch matrix tree data
   const { data: treeData } = trpc.matrix.getTree.useQuery(
     { orgId: activeOrgId },
-    { enabled: Boolean(activeOrgId) }
+    { enabled: Boolean(activeOrgId && isAdministrator) }
   );
 
   // Fetch members directory
   const { data: membersList } = trpc.member.list.useQuery(
     { orgId: activeOrgId },
-    { enabled: Boolean(activeOrgId) }
+    { enabled: Boolean(activeOrgId && isAdministrator) }
   );
 
   useEffect(() => {
@@ -188,7 +198,7 @@ export default function Home() {
   // Fetch open slots
   const { data: openSlots } = trpc.matrix.getOpenSlots.useQuery(
     { orgId: activeOrgId },
-    { enabled: Boolean(activeOrgId) }
+    { enabled: Boolean(activeOrgId && isAdministrator) }
   );
 
   // Mutations
@@ -289,8 +299,30 @@ export default function Home() {
     user?.loginMethod !== "google" &&
     user?.openId !== "admin_workspace_master";
 
-  if (forceGatePreview || !isAuthenticated || !user || user.role !== "admin" || requiresGoogleSignIn) {
+  if (forceGatePreview || !isAuthenticated || !user || requiresGoogleSignIn) {
     return <AdminAuthGate errorCode={authError || (requiresGoogleSignIn ? "access_denied" : null)} />;
+  }
+
+  if (forceMemberJoinPreview) {
+    return (
+      <MemberNetworkAccess
+        user={{ name: "David Kim", email: "david.kim@gmail.com" }}
+        onLogout={logout}
+      />
+    );
+  }
+
+  if (forceMemberPortalPreview) {
+    return (
+      <MemberNetworkAccess
+        user={{ name: "Sarah Conway", email: "sarah.conway@gmail.com" }}
+        onLogout={logout}
+      />
+    );
+  }
+
+  if (user.role !== "admin") {
+    return <MemberNetworkAccess user={user} onLogout={logout} />;
   }
 
   // Presentation Export view replaces entire chrome for clean printing

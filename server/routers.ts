@@ -71,8 +71,9 @@ export const appRouter = router({
   // Organizations
   // ========================================================
   org: router({
-    list: adminProcedure.query(async () => {
+    list: adminProcedure.query(async ({ ctx }) => {
       await db.seedInitialMLMDataIfEmpty();
+      await db.claimUnownedOrganizationsForCreator(ctx.user.id);
       return db.getOrganizations();
     }),
 
@@ -96,7 +97,7 @@ export const appRouter = router({
           logoUrl: z.string().optional(),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
         return db.createOrganization({
           name: input.name,
           code: input.code.toUpperCase().replace(/\s+/g, "-"),
@@ -105,6 +106,7 @@ export const appRouter = router({
           logoUrl: input.logoUrl || null,
           matrixWidth: 3,
           matrixDepth: 5,
+          ownerUserId: ctx.user.id,
         });
       }),
 
@@ -579,6 +581,84 @@ export const appRouter = router({
         await db.deleteOrganizationRank(input.orgId, input.rankId);
         return { success: true };
     }),
+  }),
+
+  // ========================================================
+  // Verified Member Network Access
+  // ========================================================
+  network: router({
+    mine: protectedProcedure.query(async ({ ctx }) => {
+      return db.getUserNetworkMemberships(ctx.user.id);
+    }),
+
+    emailMatches: protectedProcedure.query(async ({ ctx }) => {
+      if (!ctx.user.email) return [];
+      return db.findEmailNetworkMatches(ctx.user.email);
+    }),
+
+    phoneMatches: protectedProcedure
+      .input(z.object({ phone: z.string().min(7).max(64) }))
+      .query(async ({ input }) => {
+        return db.findPhoneNetworkMatches(input.phone);
+      }),
+
+    joinByEmail: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        return db.joinNetworkByVerifiedEmail(input.orgId, ctx.user);
+      }),
+
+    requestByPhone: protectedProcedure
+      .input(z.object({ orgId: z.number(), phone: z.string().min(7).max(64) }))
+      .mutation(async ({ ctx, input }) => {
+        return db.requestNetworkJoinByPhone(input.orgId, input.phone, ctx.user);
+      }),
+
+    portal: protectedProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        try {
+          return await db.getMemberPortalData(input.orgId, ctx.user.id);
+        } catch (error) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: error instanceof Error ? error.message : "Network access is unavailable",
+          });
+        }
+      }),
+
+    ownerAccess: adminProcedure
+      .input(z.object({ orgId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const isOwner = await db.isOrganizationOwner(input.orgId, ctx.user.id);
+        return {
+          isOwner,
+          memberships: isOwner ? await db.getOwnerNetworkMemberships(input.orgId) : [],
+        };
+      }),
+
+    updateMemberAccess: adminProcedure
+      .input(
+        z.object({
+          orgId: z.number(),
+          membershipId: z.number(),
+          status: z.enum(["pending", "active", "revoked"]).optional(),
+          accessLevel: z.enum(["limited", "full"]).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        try {
+          return await db.updateNetworkMembershipByOwner({
+            ...input,
+            ownerUserId: ctx.user.id,
+          });
+        } catch (error) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: error instanceof Error ? error.message : "Unable to update member visibility privileges",
+          });
+        }
+      }),
   }),
 
   // ========================================================
