@@ -13,7 +13,10 @@ interface ChartSettingsViewProps {
 
 export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
   const utils = trpc.useUtils();
-  const { data: org, isLoading } = trpc.org.get.useQuery({ id: orgId });
+  const { data: org, isLoading: isOrgLoading, error: orgError } = trpc.org.get.useQuery(
+    { id: orgId },
+    { enabled: Boolean(orgId), retry: 1 }
+  );
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -56,7 +59,10 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
     },
   });
 
-  const { data: ranksList } = trpc.rank.list.useQuery({ orgId });
+  const { data: ranksList, isLoading: isRanksLoading } = trpc.rank.list.useQuery(
+    { orgId },
+    { enabled: Boolean(orgId), retry: 1 }
+  );
 
   const createRankMutation = trpc.rank.create.useMutation({
     onSuccess: (newRank) => {
@@ -140,8 +146,25 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
     });
   };
 
-  if (isLoading) {
-    return <div className="p-12 text-center text-xs text-slate-400">Loading settings...</div>;
+  if (isOrgLoading && !org) {
+    return (
+      <div className="max-w-4xl mx-auto p-12 text-center text-xs text-slate-400 space-y-3">
+        <div className="w-8 h-8 border-3 border-[#9d2025] border-t-transparent rounded-full animate-spin mx-auto" />
+        <p>Loading organization chart settings...</p>
+      </div>
+    );
+  }
+
+  if (orgError && !org) {
+    return (
+      <div className="max-w-4xl mx-auto p-8 bg-white rounded-xl border border-red-200 shadow-sm text-center space-y-3">
+        <div className="text-red-600 font-bold text-sm">Unable to load organization settings</div>
+        <p className="text-xs text-slate-500">{orgError.message || "Please check your administrator permissions."}</p>
+        <Button onClick={() => utils.org.get.invalidate({ id: orgId })} className="bg-[#9d2025] text-white text-xs font-bold">
+          Retry
+        </Button>
+      </div>
+    );
   }
 
   return (

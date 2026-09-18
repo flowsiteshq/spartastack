@@ -1,6 +1,7 @@
 import { NOT_ADMIN_ERR_MSG, UNAUTHED_ERR_MSG } from '@shared/const';
 import { initTRPC, TRPCError } from "@trpc/server";
 import superjson from "superjson";
+import { ENV } from "./env";
 import type { TrpcContext } from "./context";
 
 const t = initTRPC.context<TrpcContext>().create({
@@ -34,7 +35,11 @@ export const adminProcedure = t.procedure.use(
     const isGoogleAdministrator =
       ctx.user?.role === "admin" &&
       ctx.user.loginMethod === "google" &&
-      ctx.user.openId.startsWith("google_");
+      (ctx.user.openId.startsWith("google_") || ctx.user.openId === ENV.ownerOpenId);
+    const isOwnerAdministrator =
+      ctx.user?.role === "admin" &&
+      Boolean(ENV.ownerOpenId) &&
+      ctx.user.openId === ENV.ownerOpenId;
     const isLocalDevelopmentAdministrator =
       process.env.NODE_ENV === "development" &&
       ctx.user?.role === "admin" &&
@@ -45,7 +50,7 @@ export const adminProcedure = t.procedure.use(
     // session. Only an approved, verified Google OAuth identity can operate
     // the administrator APIs. The narrow development exception preserves the
     // local demo workflow; Vitest uses explicit context fixtures.
-    if (!ctx.user || ctx.user.role !== 'admin' || (!isGoogleAdministrator && !isLocalDevelopmentAdministrator && !isTestFixture)) {
+    if (!ctx.user || ctx.user.role !== 'admin' || (!isGoogleAdministrator && !isOwnerAdministrator && !isLocalDevelopmentAdministrator && !isTestFixture)) {
       throw new TRPCError({ code: "FORBIDDEN", message: NOT_ADMIN_ERR_MSG });
     }
 

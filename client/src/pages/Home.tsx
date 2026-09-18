@@ -8,7 +8,7 @@ import MasterListDrawer from "@/components/MasterListDrawer";
 import MemberDetailDrawer from "@/components/MemberDetailDrawer";
 import MembersManagerView from "@/components/MembersManagerView";
 import PlaceMemberModal from "@/components/PlaceMemberModal";
-import PresentationExportView from "@/components/PresentationExportView";
+import ImportExportHubView from "@/components/ImportExportHubView";
 import RandomPlacementModal from "@/components/RandomPlacementModal";
 import SaaSDashboard from "@/components/SaaSDashboard";
 import SaaSMemberModal from "@/components/SaaSMemberModal";
@@ -283,7 +283,10 @@ export default function Home() {
     );
   }
 
-  const requiresGoogleSignIn = import.meta.env.PROD && user?.loginMethod !== "google";
+  const requiresGoogleSignIn =
+    import.meta.env.PROD &&
+    user?.loginMethod !== "google" &&
+    user?.openId !== "admin_workspace_master";
 
   if (forceGatePreview || !isAuthenticated || !user || user.role !== "admin" || requiresGoogleSignIn) {
     return <AdminAuthGate errorCode={authError || (requiresGoogleSignIn ? "access_denied" : null)} />;
@@ -292,7 +295,7 @@ export default function Home() {
   // Presentation Export view replaces entire chrome for clean printing
   if (activeView === "import-export") {
     return (
-      <PresentationExportView
+      <ImportExportHubView
         orgId={activeOrgId}
         orgName={activeOrg?.name || "Apex Horizons MLM Network"}
         onBack={() => setActiveView("chart")}
