@@ -4,6 +4,7 @@ import AdminAuthGate from "@/components/AdminAuthGate";
 import ChartSettingsView from "@/components/ChartSettingsView";
 import ImportCSVModal from "@/components/ImportCSVModal";
 import MemberCommunicationDialog, { CommunicationMember } from "@/components/MemberCommunicationDialog";
+import MessagesWorkspaceView from "@/components/MessagesWorkspaceView";
 import MasterListDrawer from "@/components/MasterListDrawer";
 import MemberDetailDrawer from "@/components/MemberDetailDrawer";
 import MembersManagerView from "@/components/MembersManagerView";
@@ -36,7 +37,7 @@ export default function Home() {
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const v = params.get("view");
-      if (v && ["chart", "dashboard", "members", "saved-charts", "import-export", "settings"].includes(v)) {
+      if (v && ["chart", "dashboard", "members", "messages", "saved-charts", "import-export", "settings"].includes(v)) {
         return v as ActiveView;
       }
     }
@@ -393,6 +394,14 @@ export default function Home() {
             />
           )}
 
+          {activeView === "messages" && (
+            <MessagesWorkspaceView
+              orgId={activeOrgId}
+              orgName={activeOrg?.name || "Apex Horizons MLM Network"}
+              onComposeMessage={handleOpenCommunication}
+            />
+          )}
+
           {activeView === "saved-charts" && (
             <SavedChartsManager
               orgId={activeOrgId}
@@ -505,6 +514,7 @@ export default function Home() {
 
       <MemberCommunicationDialog
         member={communicationMember}
+        orgId={activeOrgId}
         isOpen={Boolean(communicationMember)}
         onClose={() => setCommunicationMember(null)}
       />

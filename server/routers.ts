@@ -578,6 +578,46 @@ export const appRouter = router({
       .mutation(async ({ input }) => {
         await db.deleteOrganizationRank(input.orgId, input.rankId);
         return { success: true };
+    }),
+  }),
+
+  // ========================================================
+  // Member Communication History
+  // ========================================================
+  communication: router({
+    list: adminProcedure
+      .input(
+        z.object({
+          orgId: z.number(),
+          memberId: z.number().optional(),
+          channel: z.enum(["email", "text"]).optional(),
+          limit: z.number().min(1).max(250).optional().default(100),
+        })
+      )
+      .query(async ({ input }) => {
+        return db.getCommunicationHistory(input.orgId, {
+          memberId: input.memberId,
+          channel: input.channel,
+          limit: input.limit,
+        });
+      }),
+
+    recordHandoff: adminProcedure
+      .input(
+        z.object({
+          orgId: z.number(),
+          memberId: z.number(),
+          channel: z.enum(["email", "text"]),
+          recipient: z.string().min(1).max(320),
+          subject: z.string().max(255).optional(),
+          message: z.string().min(1).max(10000),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        return db.recordCommunicationHandoff({
+          ...input,
+          initiatedBy: ctx.user.name || ctx.user.email || "Administrator",
+        });
       }),
   }),
 

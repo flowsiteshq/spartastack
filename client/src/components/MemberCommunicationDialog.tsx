@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Mail, MessageCircle, Phone, Send, ShieldCheck } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 export type CommunicationMember = {
@@ -24,8 +25,10 @@ export type CommunicationMember = {
 
 interface MemberCommunicationDialogProps {
   member: CommunicationMember | null;
+  orgId?: number;
   isOpen: boolean;
   onClose: () => void;
+  onLogged?: () => void;
 }
 
 type Channel = "email" | "text";
@@ -36,10 +39,19 @@ function cleanPhone(phone?: string | null) {
   return (phone || "").replace(/[^0-9+]/g, "");
 }
 
-export default function MemberCommunicationDialog({ member, isOpen, onClose }: MemberCommunicationDialogProps) {
+export default function MemberCommunicationDialog({ member, orgId, isOpen, onClose, onLogged }: MemberCommunicationDialogProps) {
   const [channel, setChannel] = useState<Channel>("email");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
+
+  const utils = trpc.useUtils();
+  const recordHandoffMutation = trpc.communication.recordHandoff.useMutation({
+    onSuccess: () => {
+      utils.communication.list.invalidate();
+      utils.activity.list.invalidate();
+      onLogged?.();
+    },
+  });
 
   const memberName = useMemo(() => {
     if (!member) return "Member";
@@ -64,15 +76,32 @@ export default function MemberCommunicationDialog({ member, isOpen, onClose }: M
     if (nextChannel === "text") setSubject("");
   };
 
-  const handleOpenComposer = () => {
+  const handleOpenComposer = async () => {
+    const effectiveOrgId = orgId || 1;
+
     if (channel === "email") {
       if (!emailAvailable) {
         toast.error("This member does not have an email address on file.");
         return;
       }
+
+      try {
+        await recordHandoffMutation.mutateAsync({
+          orgId: effectiveOrgId,
+          memberId: member.id,
+          channel: "email",
+          recipient: member.email,
+          subject: subject.trim() || undefined,
+          message: message.trim(),
+        });
+      } catch (err) {
+        console.warn("Failed to record communication history:", err);
+      }
+
       const url = `mailto:${encodeURIComponent(member.email)}?subject=${encodeURIComponent(subject.trim())}&body=${encodeURIComponent(message)}`;
       window.location.assign(url);
-      toast.success("Email draft opened in your mail application.");
+      toast.success("Email draft opened in mail app & recorded to Messages history.");
+      onClose();
       return;
     }
 
@@ -81,8 +110,22 @@ export default function MemberCommunicationDialog({ member, isOpen, onClose }: M
       toast.error("Add a mobile number before sending a text.");
       return;
     }
+
+    try {
+      await recordHandoffMutation.mutateAsync({
+        orgId: effectiveOrgId,
+        memberId: member.id,
+        channel: "text",
+        recipient: member.phone || phone,
+        message: message.trim(),
+      });
+    } catch (err) {
+      console.warn("Failed to record communication history:", err);
+    }
+
     window.location.assign(`sms:${phone}?body=${encodeURIComponent(message)}`);
-    toast.success("Text draft opened in your messaging application.");
+    toast.success("Text draft opened in messaging app & recorded to Messages history.");
+    onClose();
   };
 
   return (

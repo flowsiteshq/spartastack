@@ -3,6 +3,8 @@ import { drizzle } from "drizzle-orm/mysql2";
 import {
   ActivityLog,
   activityLogs,
+  CommunicationLog,
+  communicationLogs,
   InsertActivityLog,
   InsertMember,
   InsertOrganization,
@@ -153,6 +155,7 @@ export async function deleteOrganization(id: number): Promise<void> {
   await db.delete(placements).where(eq(placements.orgId, id));
   await db.delete(members).where(eq(members.orgId, id));
   await db.delete(savedCharts).where(eq(savedCharts.orgId, id));
+  await db.delete(communicationLogs).where(eq(communicationLogs.orgId, id));
   await db.delete(activityLogs).where(eq(activityLogs.orgId, id));
   await db.delete(organizations).where(eq(organizations.id, id));
 }
@@ -410,6 +413,7 @@ export async function deleteMember(id: number): Promise<void> {
   if (placed.length > 0) {
     await unstackPlacementAndDescendants(placed[0].id);
   }
+  await db.delete(communicationLogs).where(eq(communicationLogs.memberId, id));
   await db.delete(members).where(eq(members.id, id));
   if (m) {
     await logActivity(
@@ -419,6 +423,104 @@ export async function deleteMember(id: number): Promise<void> {
       "delete_member"
     );
   }
+}
+
+// ========================================================
+// Member Communication History
+// ========================================================
+
+export type CommunicationChannel = "email" | "text";
+
+export interface CommunicationHistoryItem extends CommunicationLog {
+  memberFirstName: string;
+  memberLastName: string;
+  memberAvatarUrl: string | null;
+  memberRank: string;
+}
+
+export async function recordCommunicationHandoff(input: {
+  orgId: number;
+  memberId: number;
+  channel: CommunicationChannel;
+  recipient: string;
+  subject?: string | null;
+  message: string;
+  initiatedBy?: string | null;
+}): Promise<CommunicationLog> {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+
+  const member = await getMemberById(input.memberId);
+  if (!member || member.orgId !== input.orgId) {
+    throw new Error("Member does not belong to the selected organization");
+  }
+
+  const [result] = await db.insert(communicationLogs).values({
+    orgId: input.orgId,
+    memberId: input.memberId,
+    channel: input.channel,
+    recipient: input.recipient.trim(),
+    subject: input.subject?.trim() || null,
+    message: input.message.trim(),
+    initiatedBy: input.initiatedBy?.trim() || "Administrator",
+  });
+
+  const created = await db
+    .select()
+    .from(communicationLogs)
+    .where(eq(communicationLogs.id, result.insertId))
+    .limit(1);
+
+  if (!created[0]) throw new Error("Failed to record communication handoff");
+
+  await logActivity(
+    input.orgId,
+    input.initiatedBy?.trim() || "Administrator",
+    `Opened ${input.channel === "email" ? "email" : "text message"} draft for ${member.firstName} ${member.lastName}`,
+    "communication_handoff"
+  );
+
+  return created[0];
+}
+
+export async function getCommunicationHistory(
+  orgId: number,
+  filter?: {
+    memberId?: number;
+    channel?: CommunicationChannel;
+    limit?: number;
+  }
+): Promise<CommunicationHistoryItem[]> {
+  const db = await getDb();
+  if (!db) return [];
+
+  const conditions = [eq(communicationLogs.orgId, orgId)];
+  if (filter?.memberId) conditions.push(eq(communicationLogs.memberId, filter.memberId));
+  if (filter?.channel) conditions.push(eq(communicationLogs.channel, filter.channel));
+
+  const rows = await db
+    .select({
+      id: communicationLogs.id,
+      orgId: communicationLogs.orgId,
+      memberId: communicationLogs.memberId,
+      channel: communicationLogs.channel,
+      recipient: communicationLogs.recipient,
+      subject: communicationLogs.subject,
+      message: communicationLogs.message,
+      initiatedBy: communicationLogs.initiatedBy,
+      createdAt: communicationLogs.createdAt,
+      memberFirstName: members.firstName,
+      memberLastName: members.lastName,
+      memberAvatarUrl: members.avatarUrl,
+      memberRank: members.rank,
+    })
+    .from(communicationLogs)
+    .innerJoin(members, eq(communicationLogs.memberId, members.id))
+    .where(and(...conditions))
+    .orderBy(desc(communicationLogs.createdAt))
+    .limit(filter?.limit ?? 100);
+
+  return rows;
 }
 
 // ========================================================

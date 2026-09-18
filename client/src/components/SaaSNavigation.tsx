@@ -37,6 +37,7 @@ import {
   Users,
   Workflow,
   Wrench,
+  MessageSquare,
 } from "lucide-react";
 import { useState } from "react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -45,6 +46,7 @@ export type ActiveView =
   | "chart"
   | "dashboard"
   | "members"
+  | "messages"
   | "random-stack"
   | "autofill"
   | "saved-charts"
@@ -129,6 +131,18 @@ export default function SaaSNavigation({
             >
               <Users className="w-3.5 h-3.5" />
               <span>Members</span>
+            </button>
+
+            <button
+              onClick={() => onSelectView("messages")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
+                activeView === "messages"
+                  ? "bg-[#9d2025] text-white shadow"
+                  : "text-slate-300 hover:text-white hover:bg-[#322a25]"
+              }`}
+            >
+              <MessageSquare className="w-3.5 h-3.5" />
+              <span>Messages</span>
             </button>
 
             <button
@@ -344,6 +358,7 @@ export function SaaSSidebar({
           <nav className="space-y-1">
             <SidebarItem label="View Chart" icon={<Network className="w-4 h-4" />} active={activeView === "chart"} onClick={() => onSelectView("chart")} />
             <SidebarItem label="Manage Members" icon={<Users className="w-4 h-4" />} active={activeView === "members"} onClick={() => onSelectView("members")} />
+            <SidebarItem label="Messages" icon={<MessageSquare className="w-4 h-4" />} active={activeView === "messages"} onClick={() => onSelectView("messages")} />
             <SidebarItem
               label="Random Stack"
               icon={<Shuffle className="w-4 h-4 text-[#d3aa54]" />}

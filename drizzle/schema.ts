@@ -88,6 +88,27 @@ export const savedCharts = mysqlTable("saved_charts", {
 export type SavedChart = typeof savedCharts.$inferSelect;
 export type InsertSavedChart = typeof savedCharts.$inferInsert;
 
+/**
+ * Administrator outreach history. A record is created when an administrator
+ * opens a prepared email or SMS draft in their chosen communication client.
+ * It intentionally records handoff activity rather than claiming a message
+ * was delivered, opened, or replied to by the recipient.
+ */
+export const communicationLogs = mysqlTable("communication_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  orgId: int("orgId").notNull(),
+  memberId: int("memberId").notNull(),
+  channel: mysqlEnum("channel", ["email", "text"]).notNull(),
+  recipient: varchar("recipient", { length: 320 }).notNull(),
+  subject: varchar("subject", { length: 255 }),
+  message: text("message").notNull(),
+  initiatedBy: varchar("initiatedBy", { length: 255 }).default("Administrator").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type CommunicationLog = typeof communicationLogs.$inferSelect;
+export type InsertCommunicationLog = typeof communicationLogs.$inferInsert;
+
 export const activityLogs = mysqlTable("activity_logs", {
   id: int("id").autoincrement().primaryKey(),
   orgId: int("orgId").notNull(),
