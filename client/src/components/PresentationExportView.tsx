@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import SpartanBrand from "@/components/SpartanBrand";
 import { trpc } from "@/lib/trpc";
 import { ArrowLeft, Crown, Download, Printer } from "lucide-react";
 import { TreeNode } from "../../../server/db";
@@ -33,12 +34,12 @@ export default function PresentationExportView({
   return (
     <div className="min-h-screen bg-white text-slate-900">
       {/* Non-printed Toolbar */}
-      <div className="print:hidden bg-slate-900 text-white p-4 flex items-center justify-between sticky top-0 z-50">
+      <div className="print:hidden bg-[#100e0e] text-white p-4 flex items-center justify-between sticky top-0 z-50">
         <Button
           variant="ghost"
           size="sm"
           onClick={onBack}
-          className="text-white hover:bg-slate-800 text-xs font-bold"
+            className="text-white hover:bg-[#322a25] text-xs font-bold"
         >
           <ArrowLeft className="w-4 h-4 mr-1.5" />
           <span>Return to Workspace</span>
@@ -46,7 +47,7 @@ export default function PresentationExportView({
         <div className="flex items-center gap-3">
           <Button
             onClick={handlePrint}
-            className="bg-[#1d70f5] hover:bg-blue-600 text-white font-bold text-xs h-9 px-4 rounded-lg flex items-center gap-2"
+            className="bg-[#9d2025] hover:bg-[#74171b] text-white font-bold text-xs h-9 px-4 rounded-lg flex items-center gap-2"
           >
             <Printer className="w-4 h-4" />
             <span>Print / Save as PDF</span>
@@ -57,11 +58,10 @@ export default function PresentationExportView({
       {/* Pure Presentation Document Area */}
       <div className="max-w-6xl mx-auto p-8 sm:p-12 space-y-8 bg-white">
         {/* Clean Executive Header */}
-        <div className="border-b-2 border-slate-900 pb-6 flex items-start justify-between">
+        <div className="border-b-2 border-[#211c18] pb-6 flex items-start justify-between">
           <div>
-            <div className="text-xs font-bold tracking-widest text-[#1d70f5] uppercase">
-              EXECUTIVE DOWNLINE SPECIFICATION
-            </div>
+            <SpartanBrand tone="light" className="mb-4" />
+            <div className="text-xs font-bold tracking-widest text-[#9d2025] uppercase">Organization placement report</div>
             <h1 className="text-3xl font-extrabold text-slate-900 mt-1">{orgName}</h1>
             <p className="text-sm text-slate-500 mt-0.5">3 × 5 Downline Matrix Organizational Chart</p>
           </div>
@@ -120,14 +120,14 @@ export default function PresentationExportView({
 
                     {leg ? (
                       <div className="flex flex-col items-center">
-                        <div className="w-52 p-3 rounded-xl border-2 border-[#1d70f5] bg-blue-50/20 text-center shadow-sm">
-                          <div className="text-[9px] font-extrabold text-[#1d70f5] uppercase tracking-wider mb-1">
+                        <div className="w-52 p-3 rounded-xl border-2 border-[#9d2025] bg-[#f8ebe9]/30 text-center shadow-sm">
+                          <div className="text-[9px] font-extrabold text-[#9d2025] uppercase tracking-wider mb-1">
                             LEVEL 1 - POSITION {legIdx + 1}
                           </div>
                           <img
                             src={leg.member.avatarUrl || "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=120&h=120&q=80"}
                             alt=""
-                            className="w-10 h-10 rounded-lg object-cover mx-auto my-1 border border-blue-200"
+                            className="w-10 h-10 rounded-lg object-cover mx-auto my-1 border border-[#ecd0cf]"
                           />
                           <div className="font-bold text-xs text-slate-900">
                             {leg.member.firstName} {leg.member.lastName}
@@ -189,8 +189,8 @@ export default function PresentationExportView({
 
         {/* Clean Executive Footer */}
         <div className="border-t border-slate-200 pt-6 flex items-center justify-between text-xs text-slate-400">
-          <div>MemberStack Organizational Planning System</div>
-          <div>Confidential • For Internal Leadership Review Only</div>
+          <div>Spartan Stack • Spartan Nation</div>
+          <div>Confidential • Internal Leadership Review</div>
         </div>
       </div>
     </div>

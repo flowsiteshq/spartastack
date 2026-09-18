@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import SpartanBrand from "@/components/SpartanBrand";
 import {
   BarChart3,
   Bell,
@@ -83,30 +84,20 @@ export default function SaaSNavigation({
       {/* ======================================================== */}
       {/* Top Application Header */}
       {/* ======================================================== */}
-      <header className="sticky top-0 z-40 bg-[#0c1626] border-b border-slate-800 text-white flex items-center justify-between px-4 sm:px-6 h-16 shadow-sm">
+      <header className="sticky top-0 z-40 bg-[#100e0e] border-b border-[#3d3325] text-white flex items-center justify-between px-4 sm:px-6 h-16 shadow-sm">
         {/* Left: Brand Monogram & Top Tabs */}
         <div className="flex items-center gap-6">
-          {/* MS Logo in Top Nav */}
-          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => onSelectView("chart")}>
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center shadow-md">
-              <span className="font-extrabold text-slate-950 text-base tracking-tighter">MS</span>
-            </div>
-            <div className="hidden lg:block leading-none">
-              <div className="font-extrabold text-sm tracking-wider text-white">MEMBERSTACK</div>
-              <div className="text-[9px] text-slate-400 font-medium tracking-widest mt-0.5">
-                PEOPLE • POWER • POSSIBILITIES
-              </div>
-            </div>
-          </div>
+          <SpartanBrand className="hidden sm:flex" onClick={() => onSelectView("chart")} />
+          <SpartanBrand compact className="sm:hidden" onClick={() => onSelectView("chart")} />
 
           {/* Horizontal Top Navigation Tabs */}
-          <nav className="hidden md:flex items-center gap-1 bg-[#132034] p-1 rounded-lg border border-slate-700/60 text-xs font-semibold">
+          <nav className="hidden md:flex items-center gap-1 bg-[#211c19] p-1 rounded-lg border border-[#463a2c] text-xs font-semibold">
             <button
               onClick={() => onSelectView("dashboard")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                 activeView === "dashboard"
-                  ? "bg-[#1d70f5] text-white shadow"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-[#9d2025] text-white shadow"
+                  : "text-slate-300 hover:text-white hover:bg-[#322a25]"
               }`}
             >
               <Home className="w-3.5 h-3.5" />
@@ -117,8 +108,8 @@ export default function SaaSNavigation({
               onClick={() => onSelectView("chart")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                 activeView === "chart"
-                  ? "bg-[#1d70f5] text-white shadow"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-[#9d2025] text-white shadow"
+                  : "text-slate-300 hover:text-white hover:bg-[#322a25]"
               }`}
             >
               <Network className="w-3.5 h-3.5" />
@@ -129,8 +120,8 @@ export default function SaaSNavigation({
               onClick={() => onSelectView("members")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                 activeView === "members"
-                  ? "bg-[#1d70f5] text-white shadow"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-[#9d2025] text-white shadow"
+                  : "text-slate-300 hover:text-white hover:bg-[#322a25]"
               }`}
             >
               <Users className="w-3.5 h-3.5" />
@@ -141,8 +132,8 @@ export default function SaaSNavigation({
               onClick={() => onSelectView("saved-charts")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                 activeView === "saved-charts"
-                  ? "bg-[#1d70f5] text-white shadow"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-[#9d2025] text-white shadow"
+                  : "text-slate-300 hover:text-white hover:bg-[#322a25]"
               }`}
             >
               <Wrench className="w-3.5 h-3.5" />
@@ -153,8 +144,8 @@ export default function SaaSNavigation({
               onClick={() => onSelectView("import-export")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                 activeView === "import-export"
-                  ? "bg-[#1d70f5] text-white shadow"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-[#9d2025] text-white shadow"
+                  : "text-slate-300 hover:text-white hover:bg-[#322a25]"
               }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />
@@ -165,8 +156,8 @@ export default function SaaSNavigation({
               onClick={() => onSelectView("settings")}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                 activeView === "settings"
-                  ? "bg-[#1d70f5] text-white shadow"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/50"
+                  ? "bg-[#9d2025] text-white shadow"
+                  : "text-slate-300 hover:text-white hover:bg-[#322a25]"
               }`}
             >
               <Settings className="w-3.5 h-3.5" />
@@ -184,18 +175,18 @@ export default function SaaSNavigation({
               placeholder="Search members..."
               value={searchTerm}
               onChange={(e) => handleSearchChange(e.target.value)}
-              className="pl-9 pr-3 h-9 bg-white text-slate-800 placeholder:text-slate-400 rounded-full text-xs border border-slate-300 focus:border-blue-500 shadow-inner"
+              className="pl-9 pr-3 h-9 bg-white text-slate-800 placeholder:text-slate-400 rounded-full text-xs border border-slate-300 focus:border-[#9d2025] shadow-inner"
             />
           </div>
 
           {/* Notifications Icon with Badge 3 */}
           <button
             onClick={onOpenActivityDrawer}
-            className="relative p-2 rounded-full hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
+            className="relative p-2 rounded-full hover:bg-[#322a25] text-slate-300 hover:text-white transition-colors"
             title="View Recent Activity"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center">
+            <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#9d2025] text-white text-[10px] font-bold flex items-center justify-center">
               3
             </span>
           </button>
@@ -209,7 +200,7 @@ export default function SaaSNavigation({
                   <AvatarFallback className="bg-amber-600 text-white font-bold text-xs">LM</AvatarFallback>
                 </Avatar>
                 <div className="hidden xl:block text-left leading-tight">
-                  <div className="text-xs font-bold text-white group-hover:text-blue-300 transition-colors">
+                  <div className="text-xs font-bold text-white group-hover:text-[#e3c578] transition-colors">
                     Lead Matrix Architect
                   </div>
                   <div className="text-[10px] text-slate-400 font-medium">Administrator</div>
@@ -222,7 +213,7 @@ export default function SaaSNavigation({
                 Lead Administrator
               </DropdownMenuLabel>
               <DropdownMenuItem onClick={() => onSelectView("dashboard")} className="cursor-pointer text-xs">
-                <Home className="w-4 h-4 mr-2 text-blue-600" />
+                <Home className="w-4 h-4 mr-2 text-[#9d2025]" />
                 Executive Dashboard
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => onSelectView("settings")} className="cursor-pointer text-xs">
@@ -266,7 +257,7 @@ export function SaaSSidebar({
   onOpenAutoFill?: () => void;
 }) {
   return (
-    <aside className="w-64 bg-[#0a121e] border-r border-slate-800/80 text-white flex flex-col justify-between min-h-[calc(100vh-4rem)] p-4 flex-shrink-0">
+    <aside className="w-64 bg-[#0d0d0e] border-r border-[#3d3325] text-white flex flex-col justify-between min-h-[calc(100vh-4rem)] p-4 flex-shrink-0">
       {/* Top Menu Links */}
       <div className="space-y-6">
         <div>
@@ -279,8 +270,8 @@ export function SaaSSidebar({
               onClick={() => onSelectView("chart")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                 activeView === "chart"
-                  ? "bg-[#1d70f5] text-white shadow-md font-bold"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                  ? "bg-gradient-to-r from-[#9d2025] to-[#74171b] text-white shadow-md font-bold ring-1 ring-[#d3aa54]/35"
+                  : "text-slate-300 hover:text-white hover:bg-[#292321]"
               }`}
             >
               <Network className="w-4 h-4" />
@@ -292,8 +283,8 @@ export function SaaSSidebar({
               onClick={() => onSelectView("members")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                 activeView === "members"
-                  ? "bg-[#1d70f5] text-white shadow-md font-bold"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                  ? "bg-gradient-to-r from-[#9d2025] to-[#74171b] text-white shadow-md font-bold ring-1 ring-[#d3aa54]/35"
+                  : "text-slate-300 hover:text-white hover:bg-[#292321]"
               }`}
             >
               <Users className="w-4 h-4" />
@@ -306,9 +297,9 @@ export function SaaSSidebar({
                 if (activeView !== "chart") onSelectView("chart");
                 onOpenRandomStack?.();
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#292321] transition-all"
             >
-              <Shuffle className="w-4 h-4 text-cyan-400" />
+              <Shuffle className="w-4 h-4 text-[#d3aa54]" />
               <span>Random Stack</span>
             </button>
 
@@ -318,9 +309,9 @@ export function SaaSSidebar({
                 if (activeView !== "chart") onSelectView("chart");
                 onOpenAutoFill?.();
               }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-all"
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-[#292321] transition-all"
             >
-              <Workflow className="w-4 h-4 text-emerald-400" />
+              <Workflow className="w-4 h-4 text-[#c9c9c9]" />
               <span>Auto-Fill</span>
             </button>
 
@@ -329,8 +320,8 @@ export function SaaSSidebar({
               onClick={() => onSelectView("saved-charts")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                 activeView === "saved-charts"
-                  ? "bg-[#1d70f5] text-white shadow-md font-bold"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                  ? "bg-gradient-to-r from-[#9d2025] to-[#74171b] text-white shadow-md font-bold ring-1 ring-[#d3aa54]/35"
+                  : "text-slate-300 hover:text-white hover:bg-[#292321]"
               }`}
             >
               <Bookmark className="w-4 h-4" />
@@ -342,8 +333,8 @@ export function SaaSSidebar({
               onClick={() => onSelectView("import-export")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                 activeView === "import-export"
-                  ? "bg-[#1d70f5] text-white shadow-md font-bold"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                  ? "bg-gradient-to-r from-[#9d2025] to-[#74171b] text-white shadow-md font-bold ring-1 ring-[#d3aa54]/35"
+                  : "text-slate-300 hover:text-white hover:bg-[#292321]"
               }`}
             >
               <Share2 className="w-4 h-4" />
@@ -355,8 +346,8 @@ export function SaaSSidebar({
               onClick={() => onSelectView("settings")}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold transition-all ${
                 activeView === "settings"
-                  ? "bg-[#1d70f5] text-white shadow-md font-bold"
-                  : "text-slate-300 hover:text-white hover:bg-slate-800/60"
+                  ? "bg-gradient-to-r from-[#9d2025] to-[#74171b] text-white shadow-md font-bold ring-1 ring-[#d3aa54]/35"
+                  : "text-slate-300 hover:text-white hover:bg-[#292321]"
               }`}
             >
               <Settings className="w-4 h-4" />
@@ -366,22 +357,22 @@ export function SaaSSidebar({
         </div>
       </div>
 
-      {/* Bottom Mountain Graphic with Motivational Slogan (Matching Mockup exactly!) */}
-      <div className="relative rounded-xl overflow-hidden mt-6 border border-slate-700/60 shadow-lg group">
+      {/* Bottom leadership message */}
+      <div className="relative rounded-xl overflow-hidden mt-6 border border-[#6e5529]/70 shadow-lg group">
         <img
           src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=400&q=80"
-          alt="Build Lead Inspire Grow"
+          alt="Spartan leadership and growth"
           className="w-full h-44 object-cover brightness-75 group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent flex flex-col justify-end p-3.5">
+        <div className="absolute inset-0 bg-gradient-to-t from-[#100e0e] via-[#100e0e]/65 to-transparent flex flex-col justify-end p-3.5">
           <div className="font-extrabold text-sm tracking-wider text-white leading-tight">
             BUILD<br />
             LEAD<br />
             INSPIRE<br />
             GROW
           </div>
-          <p className="text-[10px] text-amber-300 font-medium italic mt-2 leading-snug">
-            "A STRONGER TOMORROW BUILDS TODAY."
+          <p className="text-[10px] text-[#d8b865] font-medium italic mt-2 leading-snug">
+            "DISCIPLINE CREATES LEGACY."
           </p>
         </div>
       </div>

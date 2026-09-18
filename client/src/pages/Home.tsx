@@ -15,6 +15,7 @@ import SaaSNavigation, { ActiveView, SaaSSidebar } from "@/components/SaaSNaviga
 import SaaSTreeCanvas from "@/components/SaaSTreeCanvas";
 import SaveChartModal from "@/components/SaveChartModal";
 import SavedChartsManager from "@/components/SavedChartsManager";
+import SpartanBrand from "@/components/SpartanBrand";
 import { trpc } from "@/lib/trpc";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -236,10 +237,10 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-2xl shadow-xl text-center space-y-3 border border-slate-200">
-          <div className="w-8 h-8 border-3 border-[#1d70f5] border-t-transparent rounded-full animate-spin mx-auto" />
-          <p className="text-xs font-bold text-slate-700">Loading MemberStack Workspace...</p>
+      <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl text-center space-y-3 border border-[#ded4c3]">
+          <div className="w-8 h-8 border-3 border-[#9d2025] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-bold text-slate-700">Loading Spartan Stack Workspace...</p>
         </div>
       </div>
     );
@@ -263,7 +264,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb] text-slate-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f7f6f3] text-slate-900 flex flex-col font-sans">
       {/* Top Application Header */}
       <SaaSNavigation
         activeView={activeView}
@@ -377,16 +378,10 @@ export default function Home() {
       </div>
 
       {/* Footer matching reference mockup */}
-      <footer className="bg-white border-t border-slate-200 py-3 px-6 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-2.5">
-          <div className="w-5 h-5 rounded bg-amber-500 flex items-center justify-center text-slate-950 font-extrabold text-[10px]">
-            MS
-          </div>
-          <span className="font-bold text-slate-800">MEMBERSTACK</span>
-          <span className="text-slate-400">People • Power • Possibilities</span>
-        </div>
+      <footer className="bg-[#fffdf9] border-t border-[#ded4c3] py-3 px-6 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-4">
+        <SpartanBrand tone="light" className="pointer-events-none" />
         <div className="text-slate-400 text-[11px]">
-          Version 1.0.0 • Built by Flow Sites Corp.
+          Spartan Nation • Organization planning system
         </div>
       </footer>
 

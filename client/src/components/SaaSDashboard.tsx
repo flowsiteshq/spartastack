@@ -69,11 +69,11 @@ export default function SaaSDashboard({
   return (
     <div className="space-y-6 max-w-7xl mx-auto p-4 sm:p-6">
       {/* Hero Welcome Banner */}
-      <div className="bg-gradient-to-r from-[#0c1626] via-[#10243e] to-[#0c1626] text-white rounded-2xl p-6 sm:p-8 shadow-md border border-slate-800 flex flex-wrap items-center justify-between gap-6">
+      <div className="bg-gradient-to-r from-[#100e0e] via-[#2b1715] to-[#100e0e] text-white rounded-2xl p-6 sm:p-8 shadow-md border border-[#4a3827] flex flex-wrap items-center justify-between gap-6">
         <div className="space-y-2 max-w-xl">
-          <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-widest">
-            <Crown className="w-4 h-4 text-amber-400" />
-            <span>Executive Matrix Overview</span>
+          <div className="flex items-center gap-2 text-xs font-bold text-[#d8b865] uppercase tracking-widest">
+            <Crown className="w-4 h-4 text-[#d8b865]" />
+            <span>Spartan Stack Overview</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             {orgName}
@@ -86,7 +86,7 @@ export default function SaaSDashboard({
         {/* Big CTA Button matching requirements: "OPEN ORGANIZATION CHART" */}
         <Button
           onClick={onOpenChart}
-          className="bg-[#1d70f5] hover:bg-blue-600 text-white font-extrabold text-sm px-6 h-12 rounded-xl shadow-lg flex items-center gap-2"
+          className="bg-[#9d2025] hover:bg-[#74171b] text-white font-extrabold text-sm px-6 h-12 rounded-xl shadow-lg flex items-center gap-2"
         >
           <Network className="w-5 h-5" />
           <span>OPEN ORGANIZATION CHART</span>
@@ -99,7 +99,7 @@ export default function SaaSDashboard({
         <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">TOTAL MEMBERS</span>
-            <div className="w-7 h-7 rounded-lg bg-blue-50 text-[#1d70f5] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-[#f8ebe9] text-[#9d2025] flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
           </div>
@@ -110,34 +110,34 @@ export default function SaaSDashboard({
         <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">FILLED POSITIONS</span>
-            <div className="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-[#f6edda] text-[#b3832e] flex items-center justify-center">
               <Network className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-slate-900">{placedCount}</div>
-          <div className="text-xs text-emerald-600 font-medium mt-1">Active downlines</div>
+          <div className="text-xs text-[#76521d] font-medium mt-1">Active downlines</div>
         </div>
 
         <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">OPEN POSITIONS</span>
-            <div className="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-[#f1f1ef] text-[#73736f] flex items-center justify-center">
               <UserPlus className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-slate-900">4</div>
-          <div className="text-xs text-amber-600 font-medium mt-1">Immediate frontline targets</div>
+          <div className="text-xs text-[#73736f] font-medium mt-1">Immediate frontline targets</div>
         </div>
 
         <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-xs font-semibold uppercase tracking-wider">COMPLETION RATE</span>
-            <div className="w-7 h-7 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-lg bg-[#f8ebe9] text-[#9d2025] flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-slate-900">{completionRate}%</div>
-          <div className="text-xs text-purple-600 font-medium mt-1">Tiers 0 - 2 active</div>
+          <div className="text-xs text-[#9d2025] font-medium mt-1">Tiers 0 - 2 active</div>
         </div>
       </div>
 
@@ -150,7 +150,7 @@ export default function SaaSDashboard({
               <h3 className="text-base font-extrabold text-slate-900">3×5 Matrix Tier Utilization</h3>
               <p className="text-xs text-slate-500 mt-0.5">Geometric branching ratio 1:3 down to 5 tiers</p>
             </div>
-            <span className="text-xs font-bold text-[#1d70f5] bg-blue-50 px-2.5 py-1 rounded-full border border-blue-100">
+            <span className="text-xs font-bold text-[#9d2025] bg-[#f8ebe9] px-2.5 py-1 rounded-full border border-[#ecd0cf]">
               Max Depth: 5 Levels
             </span>
           </div>
@@ -191,7 +191,7 @@ export default function SaaSDashboard({
               ) : (
                 activityList.slice(0, 5).map((log) => (
                   <div key={log.id} className="flex items-start gap-3 text-xs">
-                    <div className="w-2 h-2 rounded-full bg-[#1d70f5] mt-1.5 flex-shrink-0" />
+                    <div className="w-2 h-2 rounded-full bg-[#9d2025] mt-1.5 flex-shrink-0" />
                     <div className="min-w-0 flex-1 leading-snug">
                       <span className="font-semibold text-slate-800">{log.action}</span>
                       <div className="text-[10px] text-slate-400 mt-0.5">
@@ -255,7 +255,7 @@ export default function SaaSDashboard({
               variant="ghost"
               size="sm"
               onClick={onOpenSavedCharts}
-              className="text-xs text-[#1d70f5] font-bold h-7"
+              className="text-xs text-[#9d2025] font-bold h-7 hover:bg-[#f8ebe9]"
             >
               Manage All
             </Button>
@@ -292,9 +292,9 @@ export default function SaaSDashboard({
               variant="ghost"
               size="sm"
               onClick={onOpenMembers}
-              className="text-xs text-[#1d70f5] font-bold h-7"
+              className="text-xs text-[#9d2025] font-bold h-7 hover:bg-[#f8ebe9]"
             >
-              View All Members
+              View Directory
             </Button>
           </div>
           <div className="grid grid-cols-2 gap-2">

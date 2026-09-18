@@ -58,7 +58,7 @@ const DEFAULT_RANK_COLOR_PALETTE: Record<string, string> = {
 
 export function getRankBadgeColor(rankName: string): string {
   const normalized = (rankName || "").toLowerCase().trim();
-  return DEFAULT_RANK_COLOR_PALETTE[normalized] || "#1d70f5";
+  return DEFAULT_RANK_COLOR_PALETTE[normalized] || "#9d2025";
 }
 
 interface SaaSTreeCanvasProps {
@@ -152,9 +152,9 @@ export default function SaaSTreeCanvas({
       {/* Top Organization Header Card matching mockup */}
       {/* ======================================================== */}
       <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
-        {/* Left Title with Vertical Blue Accent Bar */}
+        {/* Left title with Spartan gold accent */}
         <div className="flex items-center gap-3.5">
-          <div className="w-1.5 h-10 rounded-full bg-[#1d70f5]" />
+          <div className="w-1.5 h-10 rounded-full bg-[#d3aa54]" />
           <div>
             <div className="flex items-center gap-3">
               <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
@@ -175,7 +175,7 @@ export default function SaaSTreeCanvas({
                       onClick={() => onSelectOrg(org.id)}
                       className="cursor-pointer text-xs font-medium"
                     >
-                      <span className={org.id === currentOrgId ? "font-bold text-[#1d70f5]" : ""}>
+                      <span className={org.id === currentOrgId ? "font-bold text-[#9d2025]" : ""}>
                         {org.name}
                       </span>
                     </DropdownMenuItem>
@@ -190,8 +190,8 @@ export default function SaaSTreeCanvas({
         {/* Right Stats & Save Chart Button */}
         <div className="flex items-center gap-4 flex-wrap">
           {/* 11 Members Badge */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/80 border border-blue-100">
-            <div className="w-6 h-6 rounded-full bg-[#1d70f5] text-white flex items-center justify-center">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f8ebe9] border border-[#ecd0cf]">
+            <div className="w-6 h-6 rounded-full bg-[#9d2025] text-white flex items-center justify-center">
               <Users className="w-3.5 h-3.5" />
             </div>
             <div className="leading-tight">
@@ -201,8 +201,8 @@ export default function SaaSTreeCanvas({
           </div>
 
           {/* 4 Open Positions Badge */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-50/80 border border-cyan-100">
-            <div className="w-6 h-6 rounded-full bg-cyan-600 text-white flex items-center justify-center">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f6edda] border border-[#e8d6aa]">
+            <div className="w-6 h-6 rounded-full bg-[#b3832e] text-white flex items-center justify-center">
               <UserPlus className="w-3.5 h-3.5" />
             </div>
             <div className="leading-tight">
@@ -212,15 +212,15 @@ export default function SaaSTreeCanvas({
           </div>
 
           {/* 73% Completion Badge */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-indigo-50/80 border border-indigo-100">
-            <div className="relative w-6 h-6 flex items-center justify-center font-bold text-[10px] text-indigo-700">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f1f1ef] border border-[#d8d8d3]">
+            <div className="relative w-6 h-6 flex items-center justify-center font-bold text-[10px] text-[#595956]">
               <svg className="w-6 h-6 transform -rotate-90">
-                <circle cx="12" cy="12" r="9" stroke="#e0e7ff" strokeWidth="2.5" fill="none" />
+                <circle cx="12" cy="12" r="9" stroke="#d8d8d3" strokeWidth="2.5" fill="none" />
                 <circle
                   cx="12"
                   cy="12"
                   r="9"
-                  stroke="#4f46e5"
+                  stroke="#9d2025"
                   strokeWidth="2.5"
                   strokeDasharray="56.5"
                   strokeDashoffset={56.5 - (56.5 * completionRate) / 100}
@@ -247,7 +247,7 @@ export default function SaaSTreeCanvas({
                 Export PDF Presentation
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onExportImage} className="cursor-pointer">
-                <ImageIcon className="w-4 h-4 mr-2 text-emerald-500" />
+                <ImageIcon className="w-4 h-4 mr-2 text-[#b3832e]" />
                 Export Clean PNG
               </DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -284,8 +284,8 @@ export default function SaaSTreeCanvas({
                 onClick={() => toggleLevelFilter(lvl)}
                 className={`w-7 h-7 rounded-md text-xs font-bold transition-all ${
                   isActive
-                    ? "bg-[#1d70f5] text-white shadow-sm"
-                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    ? "bg-[#9d2025] text-white shadow-sm"
+                    : "bg-[#f1efea] text-slate-600 hover:bg-[#e5dfd4]"
                 }`}
                 title={`Toggle visibility for Level ${lvl}`}
               >
@@ -297,22 +297,22 @@ export default function SaaSTreeCanvas({
 
         {/* Right: Actions [Random Stack], [Auto-Fill Next], [Lock Positions], [Clear Chart], Undo/Redo */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Random Stack (Solid Bright Blue) */}
+          {/* Random Stack */}
           <Button
             onClick={onOpenRandomStack}
-            className="bg-[#1d70f5] hover:bg-blue-600 text-white font-bold text-xs px-3.5 h-8 rounded-lg shadow-sm flex items-center gap-1.5"
+            className="bg-[#9d2025] hover:bg-[#74171b] text-white font-bold text-xs px-3.5 h-8 rounded-lg shadow-sm flex items-center gap-1.5"
           >
             <Shuffle className="w-3.5 h-3.5" />
             <span>Random Stack</span>
           </Button>
 
-          {/* Auto-Fill Next (White with Blue outline) */}
+          {/* Auto-Fill Next */}
           <Button
             variant="outline"
             onClick={onOpenAutoFill}
-            className="border-[#1d70f5] text-[#1d70f5] hover:bg-blue-50 font-bold text-xs px-3.5 h-8 rounded-lg flex items-center gap-1.5"
+            className="border-[#b3832e] text-[#76521d] hover:bg-[#f6edda] font-bold text-xs px-3.5 h-8 rounded-lg flex items-center gap-1.5"
           >
-            <Workflow className="w-3.5 h-3.5 text-[#1d70f5]" />
+            <Workflow className="w-3.5 h-3.5 text-[#b3832e]" />
             <span>Auto-Fill Next</span>
           </Button>
 
@@ -329,11 +329,11 @@ export default function SaaSTreeCanvas({
             }}
             className={`font-semibold text-xs px-3.5 h-8 rounded-lg flex items-center gap-1.5 transition-colors ${
               isLockMode
-                ? "bg-amber-100 border-amber-400 text-amber-800"
+                ? "bg-[#f6edda] border-[#d3aa54] text-[#76521d]"
                 : "border-slate-300 text-slate-700 hover:bg-slate-50"
             }`}
           >
-            <Lock className={`w-3.5 h-3.5 ${isLockMode ? "text-amber-600" : "text-slate-500"}`} />
+            <Lock className={`w-3.5 h-3.5 ${isLockMode ? "text-[#b3832e]" : "text-slate-500"}`} />
             <span>Lock Positions</span>
           </Button>
 
@@ -410,7 +410,7 @@ export default function SaaSTreeCanvas({
       {/* ======================================================== */}
       <div
         ref={scrollContainerRef}
-        className="relative bg-[#f8fafc] border border-slate-200/90 rounded-xl overflow-x-auto min-h-[620px] p-4 sm:p-6 shadow-inner org-chart-canvas"
+        className="relative bg-[#fcfbf8] border border-[#e0d8cc] rounded-xl overflow-x-auto min-h-[620px] p-4 sm:p-6 shadow-inner org-chart-canvas"
       >
         <div
           className="w-fit min-w-full mx-auto flex flex-col items-center py-4 transition-transform duration-200 origin-top"
@@ -418,7 +418,7 @@ export default function SaaSTreeCanvas({
         >
           {!root ? (
             <div className="text-center py-20 max-w-sm mx-auto space-y-4">
-              <div className="w-16 h-16 rounded-full bg-blue-100 text-[#1d70f5] flex items-center justify-center mx-auto">
+              <div className="w-16 h-16 rounded-full bg-[#f6edda] text-[#9d2025] flex items-center justify-center mx-auto">
                 <Users className="w-8 h-8" />
               </div>
               <div>
@@ -429,7 +429,7 @@ export default function SaaSTreeCanvas({
               </div>
               <Button
                 onClick={() => onSelectSlotToAssign(null, 0, 0)}
-                className="bg-[#1d70f5] hover:bg-blue-600 text-white font-bold text-xs px-4 h-9 rounded-lg shadow-sm"
+                className="bg-[#9d2025] hover:bg-[#74171b] text-white font-bold text-xs px-4 h-9 rounded-lg shadow-sm"
               >
                 <UserPlus className="w-4 h-4 mr-1.5" />
                 Assign Apex Leader
@@ -453,9 +453,9 @@ export default function SaaSTreeCanvas({
                   onUnstack={() => onUnstack(root.placementId)}
                 />
 
-                {/* Golden Vertical Connector Line down to distribution bar */}
-                <div className="w-0.5 h-8 bg-amber-400 relative">
-                  <div className="w-2 h-2 rounded-full bg-amber-500 absolute -bottom-1 -left-[3px]" />
+                {/* Gold vertical connector line down to distribution bar */}
+                <div className="w-0.5 h-8 bg-[#d3aa54] relative">
+                  <div className="w-2 h-2 rounded-full bg-[#b3832e] absolute -bottom-1 -left-[3px]" />
                 </div>
               </div>
 
@@ -464,8 +464,8 @@ export default function SaaSTreeCanvas({
               {/* ======================================================== */}
               {activeLevels.includes(1) && (
                 <div className="relative pt-6 flex items-start justify-center gap-6 sm:gap-8 lg:gap-10">
-                  {/* Horizontal Royal Blue Connector Bus */}
-                  <div className="absolute top-0 left-20 right-20 h-0.5 bg-[#1d70f5]" />
+                  {/* Horizontal Spartan red connector bus */}
+                  <div className="absolute top-0 left-20 right-20 h-0.5 bg-[#9d2025]" />
 
                   {[0, 1, 2].map((legIndex) => {
                     const legNode = root.children[legIndex];
@@ -473,8 +473,8 @@ export default function SaaSTreeCanvas({
                     return (
                       <div key={legIndex} className="flex flex-col items-center relative">
                         {/* Vertical Drop from connector bus */}
-                        <div className="w-0.5 h-6 bg-[#1d70f5] absolute -top-6">
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#1d70f5] absolute -top-0.5 -left-[2px]" />
+                        <div className="w-0.5 h-6 bg-[#9d2025] absolute -top-6">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#9d2025] absolute -top-0.5 -left-[2px]" />
                         </div>
 
                         {legNode ? (
@@ -536,8 +536,8 @@ export default function SaaSTreeCanvas({
         <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
           <h3 className="text-sm font-extrabold text-slate-900 mb-4">Organization Metrics</h3>
           <div className="grid grid-cols-4 gap-2 text-center">
-            <div className="p-2.5 rounded-lg bg-blue-50/60 border border-blue-100/80">
-              <div className="w-7 h-7 rounded-full bg-[#1d70f5] text-white flex items-center justify-center mx-auto mb-1.5">
+            <div className="p-2.5 rounded-lg bg-[#f8ebe9] border border-[#ecd0cf]">
+              <div className="w-7 h-7 rounded-full bg-[#9d2025] text-white flex items-center justify-center mx-auto mb-1.5">
                 <Users className="w-3.5 h-3.5" />
               </div>
               <div className="text-lg font-extrabold text-slate-900 font-sans leading-none">
@@ -546,8 +546,8 @@ export default function SaaSTreeCanvas({
               <div className="text-[10px] text-slate-500 font-medium mt-1">Total Members</div>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-emerald-50/60 border border-emerald-100/80">
-              <div className="w-7 h-7 rounded-full bg-emerald-600 text-white flex items-center justify-center mx-auto mb-1.5">
+            <div className="p-2.5 rounded-lg bg-[#f6edda] border border-[#e8d6aa]">
+              <div className="w-7 h-7 rounded-full bg-[#b3832e] text-white flex items-center justify-center mx-auto mb-1.5">
                 <Network className="w-3.5 h-3.5" />
               </div>
               <div className="text-lg font-extrabold text-slate-900 font-sans leading-none">
@@ -566,8 +566,8 @@ export default function SaaSTreeCanvas({
               <div className="text-[10px] text-slate-500 font-medium mt-1">Open Positions</div>
             </div>
 
-            <div className="p-2.5 rounded-lg bg-purple-50/60 border border-purple-100/80">
-              <div className="w-7 h-7 rounded-full bg-purple-600 text-white flex items-center justify-center mx-auto mb-1.5">
+            <div className="p-2.5 rounded-lg bg-[#f1f1ef] border border-[#d8d8d3]">
+              <div className="w-7 h-7 rounded-full bg-[#73736f] text-white flex items-center justify-center mx-auto mb-1.5">
                 <CheckCircle2 className="w-3.5 h-3.5" />
               </div>
               <div className="text-lg font-extrabold text-slate-900 font-sans leading-none">
@@ -588,7 +588,7 @@ export default function SaaSTreeCanvas({
               size="sm"
               className="text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5"
             >
-              <Plus className="w-3.5 h-3.5 text-blue-600" />
+              <Plus className="w-3.5 h-3.5 text-[#9d2025]" />
               <span>Add Member</span>
             </Button>
             <Button
@@ -597,7 +597,7 @@ export default function SaaSTreeCanvas({
               size="sm"
               className="text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5"
             >
-              <Shuffle className="w-3.5 h-3.5 text-cyan-600" />
+              <Shuffle className="w-3.5 h-3.5 text-[#b3832e]" />
               <span>Random Stack</span>
             </Button>
             <Button
@@ -606,7 +606,7 @@ export default function SaaSTreeCanvas({
               size="sm"
               className="text-xs font-semibold border-slate-200 text-slate-700 hover:bg-slate-50 flex items-center gap-1.5"
             >
-              <Workflow className="w-3.5 h-3.5 text-emerald-600" />
+              <Workflow className="w-3.5 h-3.5 text-[#73736f]" />
               <span>Auto-Fill</span>
             </Button>
             <Button
@@ -622,9 +622,9 @@ export default function SaaSTreeCanvas({
               onClick={onExportImage}
               variant="outline"
               size="sm"
-              className="text-xs font-semibold border-slate-200 text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 flex items-center gap-1.5"
+              className="text-xs font-semibold border-slate-200 text-slate-700 hover:bg-[#f6edda] hover:text-[#76521d] flex items-center gap-1.5"
             >
-              <ImageIcon className="w-3.5 h-3.5 text-emerald-600" />
+              <ImageIcon className="w-3.5 h-3.5 text-[#b3832e]" />
               <span>Export Image</span>
             </Button>
           </div>
@@ -647,7 +647,7 @@ export default function SaaSTreeCanvas({
           </div>
           <div className="flex justify-between py-0.5 border-b border-slate-100">
             <span className="text-slate-500">Total Members:</span>
-            <span className="font-bold text-[#1d70f5]">{totalPlacedCount}</span>
+            <span className="font-bold text-[#9d2025]">{totalPlacedCount}</span>
           </div>
           <div className="flex justify-between py-0.5">
             <span className="text-slate-500">Last Updated:</span>
@@ -682,14 +682,14 @@ function ApexCard({
   return (
     <div
       className={`w-60 bg-white rounded-xl border-2 transition-all saas-card-shadow ${
-        isHighlighted ? "border-[#1d70f5] ring-4 ring-blue-100 newly-placed-pulse" : "border-amber-400"
-      } ${isLockMode ? "cursor-pointer hover:border-amber-600" : ""}`}
+        isHighlighted ? "border-[#9d2025] ring-4 ring-[#f0d9d8] newly-placed-pulse" : "border-[#d3aa54]"
+      } ${isLockMode ? "cursor-pointer hover:border-[#b3832e]" : ""}`}
       onClick={isLockMode ? onToggleLock : undefined}
     >
-      {/* Amber Header Bar */}
-      <div className="bg-[#f59e0b] text-white px-3 py-1 rounded-t-[10px] flex items-center justify-between">
+      {/* Gold Header Bar */}
+      <div className="bg-[#b3832e] text-white px-3 py-1 rounded-t-[10px] flex items-center justify-between">
         <div className="flex items-center gap-1.5 font-extrabold text-[11px] tracking-wider uppercase">
-          <Crown className="w-3.5 h-3.5 text-amber-100" />
+          <Crown className="w-3.5 h-3.5 text-[#fff2cc]" />
           <span>LEVEL 0 - APEX</span>
         </div>
         <div className="flex items-center gap-1">
@@ -736,7 +736,7 @@ function ApexCard({
             "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
           }
           alt={`${m.firstName} ${m.lastName}`}
-          className="w-12 h-12 rounded-lg object-cover border-2 border-amber-400 shadow-sm flex-shrink-0"
+          className="w-12 h-12 rounded-lg object-cover border-2 border-[#d3aa54] shadow-sm flex-shrink-0"
         />
         <div className="min-w-0 flex-1">
           <div className="font-extrabold text-slate-900 text-sm truncate leading-tight">
@@ -744,11 +744,11 @@ function ApexCard({
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span className="text-[11px] font-semibold text-slate-600 truncate">{m.rank}</span>
-            <Crown className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" />
+            <Crown className="w-3.5 h-3.5 text-[#b3832e] flex-shrink-0" />
           </div>
           <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 mt-1 pt-1 border-t border-slate-100">
             <span>ID: PV{m.personalVolume}</span>
-            <span className="text-amber-600 font-bold">
+            <span className="text-[#b3832e] font-bold">
               {node.children.filter(Boolean).length} / 3
             </span>
           </div>
@@ -759,7 +759,7 @@ function ApexCard({
 }
 
 /* ========================================================================= */
-/* LEVEL 1 - FRONTLINE CARD (Blue Header matching Mockup)                    */
+/* LEVEL 1 - FRONTLINE CARD (Spartan red header)                               */
 /* ========================================================================= */
 function Level1Card({
   node,
@@ -783,17 +783,17 @@ function Level1Card({
   return (
     <div
       className={`w-56 bg-white rounded-xl border-2 transition-all saas-card-shadow ${
-        isHighlighted ? "border-[#1d70f5] ring-4 ring-blue-100 newly-placed-pulse" : "border-[#1d70f5]/60"
-      } ${isLockMode ? "cursor-pointer hover:border-amber-600" : ""}`}
+        isHighlighted ? "border-[#9d2025] ring-4 ring-[#f0d9d8] newly-placed-pulse" : "border-[#9d2025]/60"
+      } ${isLockMode ? "cursor-pointer hover:border-[#b3832e]" : ""}`}
       onClick={isLockMode ? onToggleLock : undefined}
     >
-      {/* Bright Blue Header Bar */}
-      <div className="bg-[#1d70f5] text-white px-3 py-1 rounded-t-[10px] flex items-center justify-between">
+      {/* Spartan Red Header Bar */}
+      <div className="bg-[#9d2025] text-white px-3 py-1 rounded-t-[10px] flex items-center justify-between">
         <span className="font-extrabold text-[10px] tracking-wider uppercase">
           LEVEL 1 - POSITION {positionIndex + 1}
         </span>
         <div className="flex items-center gap-1">
-          {node.isLocked && <span title="Position Locked"><Lock className="w-3 h-3 text-amber-200" /></span>}
+          {node.isLocked && <span title="Position Locked"><Lock className="w-3 h-3 text-[#f0d38d]" /></span>}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button className="text-white/80 hover:text-white p-0.5">
@@ -836,7 +836,7 @@ function Level1Card({
             "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80"
           }
           alt={`${m.firstName} ${m.lastName}`}
-          className="w-11 h-11 rounded-lg object-cover border-2 border-blue-200 shadow-sm flex-shrink-0"
+          className="w-11 h-11 rounded-lg object-cover border-2 border-[#e6caca] shadow-sm flex-shrink-0"
         />
         <div className="min-w-0 flex-1">
           <div className="font-extrabold text-slate-900 text-xs truncate leading-tight">
@@ -850,7 +850,7 @@ function Level1Card({
           </div>
           <div className="flex items-center justify-between text-[10px] font-semibold text-slate-500 mt-1 pt-1 border-t border-slate-100">
             <span>ID: PV{m.personalVolume}</span>
-            <span className="text-[#1d70f5] font-bold">
+            <span className="text-[#9d2025] font-bold">
               {node.children.filter(Boolean).length} / 3
             </span>
           </div>
@@ -887,13 +887,13 @@ function Level2Subtree({
   return (
     <div className="flex flex-col items-center mt-2">
       {/* Vertical trunk line from Level 1 */}
-      <div className="w-0.5 h-6 bg-[#1d70f5]/70 relative">
-        <div className="w-1.5 h-1.5 rounded-full bg-[#1d70f5] absolute -bottom-0.5 -left-[2px]" />
+      <div className="w-0.5 h-6 bg-[#9d2025]/70 relative">
+        <div className="w-1.5 h-1.5 rounded-full bg-[#9d2025] absolute -bottom-0.5 -left-[2px]" />
       </div>
 
       {/* Horizontal connector bar connecting 3 children */}
       <div className="relative pt-6 flex items-start justify-center gap-3">
-        <div className="absolute top-0 left-6 right-6 h-0.5 bg-[#1d70f5]/60" />
+        <div className="absolute top-0 left-6 right-6 h-0.5 bg-[#9d2025]/60" />
 
         {[0, 1, 2].map((posIndex) => {
           const child = children[posIndex];
@@ -901,8 +901,8 @@ function Level2Subtree({
           return (
             <div key={posIndex} className="flex flex-col items-center relative">
               {/* Drop line from horizontal bar */}
-              <div className="w-0.5 h-6 bg-[#1d70f5]/60 absolute -top-6">
-                <div className="w-1.5 h-1.5 rounded-full bg-[#1d70f5] absolute -top-0.5 -left-[2px]" />
+              <div className="w-0.5 h-6 bg-[#9d2025]/60 absolute -top-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-[#9d2025] absolute -top-0.5 -left-[2px]" />
               </div>
 
               {child ? (
@@ -958,8 +958,8 @@ function Level2Card({
   return (
     <div
       className={`w-32 sm:w-34 bg-white rounded-xl border transition-all saas-card-shadow ${
-        isHighlighted ? "border-[#1d70f5] ring-2 ring-blue-200 newly-placed-pulse" : "border-slate-200"
-      } ${isLockMode ? "cursor-pointer hover:border-amber-500" : ""}`}
+        isHighlighted ? "border-[#9d2025] ring-2 ring-[#f0d9d8] newly-placed-pulse" : "border-slate-200"
+      } ${isLockMode ? "cursor-pointer hover:border-[#b3832e]" : ""}`}
       onClick={isLockMode ? onToggleLock : undefined}
     >
       {/* Card Header with Lock/Menu */}
@@ -977,7 +977,7 @@ function Level2Card({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-white border border-slate-200 text-xs">
             <DropdownMenuItem onClick={onViewDetails} className="cursor-pointer">
-              <Eye className="w-3.5 h-3.5 mr-2 text-blue-600" />
+              <Eye className="w-3.5 h-3.5 mr-2 text-[#9d2025]" />
               View Member Details
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onToggleLock} className="cursor-pointer">
@@ -1030,7 +1030,7 @@ function Level2Card({
 }
 
 /* ========================================================================= */
-/* EMPTY SLOT CARD (Dashed Blue Border matching Mockup: (+) Add Member)      */
+/* EMPTY SLOT CARD (Dashed Spartan red border)                                 */
 /* ========================================================================= */
 function EmptySlotCard({
   level,
@@ -1044,13 +1044,13 @@ function EmptySlotCard({
   return (
     <div
       onClick={onAssign}
-      className="w-32 sm:w-34 bg-white/70 hover:bg-white rounded-xl border-2 border-dashed border-[#1d70f5]/40 hover:border-[#1d70f5] p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 shadow-sm group min-h-[110px]"
+      className="w-32 sm:w-34 bg-white/70 hover:bg-white rounded-xl border-2 border-dashed border-[#9d2025]/40 hover:border-[#9d2025] p-3 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 shadow-sm group min-h-[110px]"
       title={`Click to place a member into Level ${level} Position ${position}`}
     >
-      <div className="w-7 h-7 rounded-full border border-[#1d70f5]/60 group-hover:bg-[#1d70f5] group-hover:text-white flex items-center justify-center text-[#1d70f5] transition-colors">
+      <div className="w-7 h-7 rounded-full border border-[#9d2025]/60 group-hover:bg-[#9d2025] group-hover:text-white flex items-center justify-center text-[#9d2025] transition-colors">
         <Plus className="w-4 h-4" />
       </div>
-      <div className="font-extrabold text-[11px] text-[#1d70f5] uppercase tracking-wider">
+      <div className="font-extrabold text-[11px] text-[#9d2025] uppercase tracking-wider">
         Add Member
       </div>
       <div className="text-[9px] font-semibold text-slate-400 uppercase tracking-widest">

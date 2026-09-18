@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import SpartanBrand from "@/components/SpartanBrand";
 import { startGoogleLogin } from "@/const";
 import { AlertCircle, ArrowRight, CheckCircle2, LockKeyhole, ShieldCheck, UsersRound } from "lucide-react";
 
@@ -33,27 +34,19 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
   const message = errorCode ? authErrors[errorCode] : undefined;
 
   return (
-    <main className="min-h-screen bg-[#f6f8fc] p-4 sm:p-6 lg:p-8 flex items-center justify-center overflow-hidden">
+    <main className="min-h-screen bg-[#f7f6f3] p-4 sm:p-6 lg:p-8 flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-36 right-[20%] h-[30rem] w-[30rem] rounded-full bg-blue-100/70 blur-3xl" />
-        <div className="absolute -bottom-48 left-[8%] h-[32rem] w-[32rem] rounded-full bg-amber-100/55 blur-3xl" />
+        <div className="absolute -top-36 right-[20%] h-[30rem] w-[30rem] rounded-full bg-[#d3aa54]/15 blur-3xl" />
+        <div className="absolute -bottom-48 left-[8%] h-[32rem] w-[32rem] rounded-full bg-[#9d2025]/10 blur-3xl" />
       </div>
 
       <section className="relative z-10 w-full max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_28px_80px_-32px_rgba(15,23,42,0.32)] grid lg:grid-cols-[0.97fr_1.03fr]">
         <div className="p-7 sm:p-10 lg:p-14 flex flex-col justify-between min-h-[560px]">
           <div>
-            <div className="inline-flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-amber-500 text-sm font-extrabold tracking-tight text-slate-950 shadow-sm">
-                MS
-              </div>
-              <div>
-                <p className="text-sm font-extrabold tracking-[0.08em] text-slate-900">MEMBERSTACK</p>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-400">Plan with confidence</p>
-              </div>
-            </div>
+            <SpartanBrand tone="light" />
 
             <div className="mt-14 max-w-md">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-bold text-blue-700">
+              <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#f6edda] px-3 py-1.5 text-xs font-bold text-[#76521d]">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 Secure administrator workspace
               </div>
@@ -78,7 +71,7 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
             <div className="mt-8 max-w-md">
               <Button
                 onClick={startGoogleLogin}
-                className="group h-13 w-full rounded-xl border border-slate-200 bg-white px-5 text-[15px] font-bold text-slate-800 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-slate-50 hover:shadow-md focus-visible:ring-blue-500"
+                className="group h-13 w-full rounded-xl border border-[#d7d0c5] bg-white px-5 text-[15px] font-bold text-[#1d1b18] shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#d3aa54] hover:bg-[#fffdf9] hover:shadow-md focus-visible:ring-[#a02025]"
               >
                 <GoogleMark />
                 Continue with Google
@@ -97,18 +90,18 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
           </div>
         </div>
 
-        <aside className="relative hidden overflow-hidden bg-[#071a33] px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
+        <aside className="relative hidden overflow-hidden bg-[#100e0e] px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
           <img
             src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1500&q=85"
             alt="Colleagues collaborating around a shared plan"
             className="absolute inset-0 h-full w-full object-cover opacity-25"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(7,26,51,0.9)_0%,rgba(13,48,88,0.87)_56%,rgba(7,26,51,0.95)_100%)]" />
-          <div className="absolute -right-24 top-20 h-72 w-72 rounded-full border border-blue-300/15" />
-          <div className="absolute -right-8 top-36 h-48 w-48 rounded-full border border-blue-300/15" />
+          <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(16,14,14,0.94)_0%,rgba(57,25,17,0.88)_56%,rgba(16,14,14,0.97)_100%)]" />
+          <div className="absolute -right-24 top-20 h-72 w-72 rounded-full border border-[#d3aa54]/20" />
+          <div className="absolute -right-8 top-36 h-48 w-48 rounded-full border border-[#d3aa54]/20" />
 
           <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-blue-100 backdrop-blur-sm">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#d3aa54]/35 bg-[#d3aa54]/10 px-3 py-1.5 text-xs font-semibold text-[#f0deb4] backdrop-blur-sm">
               <UsersRound className="h-3.5 w-3.5" />
               Built for connected teams
             </span>
@@ -124,10 +117,10 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
               ["Administrator safeguards", "Only assigned administrators can make changes."],
             ].map(([title, detail]) => (
               <div key={title} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur-sm">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#d3aa54]" />
                 <div>
                   <p className="text-sm font-bold text-white">{title}</p>
-                  <p className="mt-1 text-xs leading-5 text-blue-100/75">{detail}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-300">{detail}</p>
                 </div>
               </div>
             ))}

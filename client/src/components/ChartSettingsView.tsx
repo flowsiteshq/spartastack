@@ -22,7 +22,7 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
   const [pvLabel, setPvLabel] = useState("PV (Personal Volume)");
   const [positionTerminology, setPositionTerminology] = useState("Level / Leg");
   const [newRankName, setNewRankName] = useState("");
-  const [newRankColor, setNewRankColor] = useState("#1d70f5");
+  const [newRankColor, setNewRankColor] = useState("#9d2025");
   const [newRankMinPV, setNewRankMinPV] = useState(100);
   const [editingRankId, setEditingRankId] = useState<string | null>(null);
   const [editRankName, setEditRankName] = useState("");
@@ -148,8 +148,8 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
     <div className="max-w-4xl mx-auto p-4 sm:p-6 space-y-6">
       {/* Header */}
       <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm">
-        <div className="flex items-center gap-2 text-xs font-bold text-[#1d70f5] uppercase tracking-wider">
-          <Settings className="w-4 h-4 text-[#1d70f5]" />
+        <div className="flex items-center gap-2 text-xs font-bold text-[#9d2025] uppercase tracking-wider">
+          <Settings className="w-4 h-4 text-[#9d2025]" />
           <span>System Configuration</span>
         </div>
         <h2 className="text-xl font-extrabold text-slate-900 mt-1">Chart & Network Settings</h2>
@@ -241,7 +241,7 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
           <Button
             type="submit"
             disabled={updateMutation.isPending}
-            className="bg-[#1d70f5] hover:bg-blue-600 text-white font-bold text-xs px-5 h-9 rounded-lg shadow-sm flex items-center gap-2"
+            className="bg-[#9d2025] hover:bg-[#74171b] text-white font-bold text-xs px-5 h-9 rounded-lg shadow-sm flex items-center gap-2"
           >
             <Save className="w-4 h-4" />
             <span>{updateMutation.isPending ? "Saving..." : "Save Settings"}</span>
@@ -253,8 +253,8 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
       <div className="bg-white rounded-xl p-6 border border-slate-200/80 shadow-sm space-y-5">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-[#1d70f5] uppercase tracking-wider">
-              <Award className="w-4 h-4 text-[#1d70f5]" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-[#9d2025] uppercase tracking-wider">
+              <Award className="w-4 h-4 text-[#9d2025]" />
               <span>Custom Rank Hierarchy</span>
             </div>
             <h2 className="text-base font-extrabold text-slate-900 mt-1">
@@ -329,7 +329,7 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
                   });
                 }}
                 disabled={createRankMutation.isPending}
-                className="w-full h-8 text-xs font-bold bg-[#1d70f5] text-white hover:bg-blue-600 flex items-center justify-center gap-1.5"
+                className="w-full h-8 text-xs font-bold bg-[#9d2025] text-white hover:bg-[#74171b] flex items-center justify-center gap-1.5"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>Add Rank</span>
@@ -342,7 +342,8 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
             <span className="text-[11px] text-slate-500 font-medium">Badge Color:</span>
             <div className="flex items-center gap-1.5">
               {[
-                { hex: "#1d70f5", name: "Royal Blue" },
+                { hex: "#9d2025", name: "Spartan Crimson" },
+                { hex: "#d3aa54", name: "Spartan Gold" },
                 { hex: "#10b981", name: "Emerald" },
                 { hex: "#f59e0b", name: "Amber Gold" },
                 { hex: "#8b5cf6", name: "Purple" },
@@ -415,7 +416,7 @@ export default function ChartSettingsView({ orgId }: ChartSettingsViewProps) {
                           minPV: editRankMinPV,
                         });
                       }}
-                      className="h-7 px-2 text-xs font-bold bg-[#1d70f5] text-white"
+                      className="h-7 px-2 text-xs font-bold bg-[#9d2025] text-white hover:bg-[#74171b]"
                     >
                       <Check className="w-3.5 h-3.5 mr-1" /> Save
                     </Button>

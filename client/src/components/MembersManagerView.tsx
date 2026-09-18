@@ -105,7 +105,7 @@ export default function MembersManagerView({
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `MemberStack_Roster_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute("download", `SpartanStack_Roster_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -117,8 +117,8 @@ export default function MembersManagerView({
       {/* Toolbar Card */}
       <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-[#1d70f5] uppercase tracking-wider">
-            <Users className="w-4 h-4 text-[#1d70f5]" />
+          <div className="flex items-center gap-2 text-xs font-bold text-[#9d2025] uppercase tracking-wider">
+            <Users className="w-4 h-4 text-[#9d2025]" />
             <span>Central Distributor Directory</span>
           </div>
           <h2 className="text-xl font-extrabold text-slate-900 mt-1">Master Member Management</h2>
@@ -130,7 +130,7 @@ export default function MembersManagerView({
         <div className="flex items-center gap-2 flex-wrap">
           <Button
             onClick={onOpenEnrollModal}
-            className="bg-[#1d70f5] hover:bg-blue-600 text-white font-bold text-xs h-9 px-4 rounded-lg shadow-sm flex items-center gap-1.5"
+            className="bg-[#9d2025] hover:bg-[#74171b] text-white font-bold text-xs h-9 px-4 rounded-lg shadow-sm flex items-center gap-1.5"
           >
             <UserPlus className="w-4 h-4" />
             <span>Add Member</span>
@@ -268,7 +268,7 @@ export default function MembersManagerView({
 
                     {/* Rank */}
                     <td className="py-3 px-4">
-                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-[#1d70f5] border border-blue-100">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#f8ebe9] text-[#9d2025] border border-[#ecd0cf]">
                         {m.rank}
                       </span>
                     </td>
@@ -307,7 +307,7 @@ export default function MembersManagerView({
                             size="sm"
                             variant="ghost"
                             onClick={onViewInTree}
-                            className="h-7 text-xs text-[#1d70f5] font-bold"
+                            className="h-7 text-xs text-[#9d2025] font-bold"
                           >
                             View in Tree
                           </Button>
@@ -316,7 +316,7 @@ export default function MembersManagerView({
                             size="sm"
                             variant="outline"
                             onClick={onViewInTree}
-                            className="h-7 text-xs text-[#1d70f5] border-blue-200 font-bold"
+                            className="h-7 text-xs text-[#9d2025] border-[#f0d9d8] font-bold"
                           >
                             Assign Slot
                           </Button>

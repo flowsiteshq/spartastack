@@ -2,26 +2,26 @@
 
 @layer base {
   :root {
-    --background: 210 30% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 217 91% 60%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222 47% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222 47% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
-    --radius: 0.5rem;
+    --background: 40 20% 96%;
+    --foreground: 28 18% 11%;
+    --card: 40 38% 99%;
+    --card-foreground: 28 18% 11%;
+    --popover: 40 38% 99%;
+    --popover-foreground: 28 18% 11%;
+    --primary: 358 66% 37%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 39 36% 91%;
+    --secondary-foreground: 28 18% 15%;
+    --muted: 36 22% 93%;
+    --muted-foreground: 28 8% 42%;
+    --accent: 39 48% 90%;
+    --accent-foreground: 28 18% 15%;
+    --destructive: 358 66% 37%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 35 18% 84%;
+    --input: 35 18% 84%;
+    --ring: 358 66% 37%;
+    --radius: 0.65rem;
   }
 
   * {
@@ -29,23 +29,29 @@
   }
 
   body {
-    background-color: #f4f7fb;
-    color: #1e293b;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background-color: #f7f6f3;
+    color: #211c18;
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     margin: 0;
     padding: 0;
     overflow-x: hidden;
   }
+
+  ::selection {
+    background: #9d2025;
+    color: #fffaf0;
+  }
 }
 
-/* Solid Opaque Dropdown & Menu Overrides */
+/* Solid, opaque overlays retain contrast on light workspace surfaces. */
 [data-slot="select-content"],
 [data-slot="dropdown-menu-content"],
 [data-slot="popover-content"] {
-  background-color: #ffffff !important;
+  background-color: #fffdf9 !important;
   opacity: 1 !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  border-color: #ded4c3 !important;
+  box-shadow: 0 20px 25px -5px rgba(27, 20, 12, 0.16), 0 8px 10px -6px rgba(27, 20, 12, 0.10) !important;
 }
 
 /* Smooth Scrollbars */
@@ -54,48 +60,51 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #eeeae2;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #b7aa98;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #8b7961;
 }
 
-/* Organizational Chart Canvas */
+/* Spartan Stack workspace canvas: restrained parchment grid behind team structure. */
 .org-chart-canvas {
-  background-color: #f8fafc;
-  background-image: 
-    radial-gradient(#e2e8f0 1px, transparent 1px);
+  background-color: #fcfbf8;
+  background-image: radial-gradient(#dfd7ca 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
-/* Card Shadows */
 .saas-card-shadow {
-  box-shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.06), 0 1px 3px -1px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px -1px rgba(44, 32, 18, 0.08), 0 1px 3px -1px rgba(44, 32, 18, 0.06);
 }
 
 .saas-card-hover:hover {
-  box-shadow: 0 8px 16px -2px rgba(0, 0, 0, 0.08), 0 3px 6px -2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 10px 20px -4px rgba(44, 32, 18, 0.13), 0 3px 6px -2px rgba(44, 32, 18, 0.06);
   transform: translateY(-1px);
 }
 
-/* Level Connector Lines */
 .connector-line {
   transition: all 0.2s ease-in-out;
 }
 
 @keyframes pulse-highlight {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4);
+    box-shadow: 0 0 0 0 rgba(157, 32, 37, 0.38);
   }
   50% {
-    box-shadow: 0 0 0 8px rgba(37, 99, 235, 0);
+    box-shadow: 0 0 0 8px rgba(157, 32, 37, 0);
   }
 }
 
 .newly-placed-pulse {
   animation: pulse-highlight 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newly-placed-pulse {
+    animation: none;
+  }
 }
