@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { CommunicationMember } from "@/components/MemberCommunicationDialog";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +16,7 @@ import {
   Edit,
   Lock,
   Mail,
+  MessageCircle,
   Network,
   Phone,
   Shield,
@@ -33,6 +35,7 @@ interface MemberDetailDrawerProps {
   onOpenEditModal: (member: any) => void;
   onUnstack: (placementId: number) => void;
   onToggleLock: (placementId: number, isLocked?: boolean) => void;
+  onOpenCommunication: (member: CommunicationMember) => void;
 }
 
 export default function MemberDetailDrawer({
@@ -43,6 +46,7 @@ export default function MemberDetailDrawer({
   onOpenEditModal,
   onUnstack,
   onToggleLock,
+  onOpenCommunication,
 }: MemberDetailDrawerProps) {
   const { data: member, isLoading } = trpc.member.get.useQuery(
     { id: memberId! },
@@ -82,9 +86,9 @@ export default function MemberDetailDrawer({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-md bg-white border border-slate-200 text-slate-800 p-6 shadow-2xl rounded-2xl">
         <DialogHeader className="border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-blue-600 uppercase tracking-wider">
-            <Shield className="w-4 h-4 text-blue-600" />
-            <span>Distributor Profile & Downline Details</span>
+          <div className="flex items-center gap-2 text-xs font-semibold text-[#9d2025] uppercase tracking-wider">
+            <Shield className="w-4 h-4 text-[#9d2025]" />
+            <span>Distributor Profile & Communications</span>
           </div>
           <DialogTitle className="text-xl font-bold font-sans text-slate-900 mt-1">
             Member Overview
@@ -99,14 +103,24 @@ export default function MemberDetailDrawer({
           <div className="space-y-4 py-2">
             {/* Member Card with Photo */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center gap-3.5 shadow-sm">
-              <img
-                src={
-                  member.avatarUrl ||
-                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
-                }
-                alt={`${member.firstName} ${member.lastName}`}
-                className="w-14 h-14 rounded-xl object-cover border-2 border-white shadow flex-shrink-0"
-              />
+                <button
+                  type="button"
+                  onClick={() => onOpenCommunication(member)}
+                  className="group relative flex-shrink-0 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-[#9d2025]"
+                  title={`Message ${member.firstName} ${member.lastName}`}
+                >
+                  <img
+                    src={
+                      member.avatarUrl ||
+                      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
+                    }
+                    alt={`Message ${member.firstName} ${member.lastName}`}
+                    className="w-14 h-14 rounded-xl object-cover border-2 border-white shadow transition-transform duration-200 group-hover:scale-[1.03]"
+                  />
+                  <span className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full border-2 border-white bg-[#9d2025] text-white shadow-sm">
+                    <Mail className="h-2.5 w-2.5" />
+                  </span>
+                </button>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between">
                   <h3 className="text-base font-extrabold text-slate-900 font-sans truncate">
@@ -119,7 +133,7 @@ export default function MemberDetailDrawer({
                   )}
                 </div>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-xs font-semibold text-[#1d70f5] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                  <span className="text-xs font-semibold text-[#9d2025] bg-[#f8ebe9] px-2 py-0.5 rounded-full border border-[#ecd0cf]">
                     {member.rank}
                   </span>
                   <span className="text-xs text-slate-400 font-medium">ID: #{member.id}</span>
@@ -141,7 +155,7 @@ export default function MemberDetailDrawer({
                 </div>
                 <div>
                   <span className="text-slate-400 text-[10px] block">DIRECT SPONSOR / UPLINE</span>
-                  <span className="font-bold text-[#1d70f5]">
+                  <span className="font-bold text-[#9d2025]">
                     {uplineParentNode
                       ? `${uplineParentNode.member.firstName} ${uplineParentNode.member.lastName}`
                       : placedNode?.level === 0
@@ -205,6 +219,15 @@ export default function MemberDetailDrawer({
                 </div>
               )}
             </div>
+
+            <Button
+              type="button"
+              onClick={() => onOpenCommunication(member)}
+              className="h-10 w-full bg-[#9d2025] text-xs font-bold text-white hover:bg-[#74171b]"
+            >
+              <MessageCircle className="mr-1.5 h-4 w-4" />
+              Message {member.firstName}
+            </Button>
           </div>
         )}
 
@@ -263,7 +286,7 @@ export default function MemberDetailDrawer({
                   onOpenEditModal(member);
                   onClose();
                 }}
-                className="bg-[#1d70f5] hover:bg-blue-600 text-white text-xs font-bold h-8"
+                className="bg-[#9d2025] hover:bg-[#74171b] text-white text-xs font-bold h-8"
               >
                 <Edit className="w-3.5 h-3.5 mr-1" />
                 Edit Profile

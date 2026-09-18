@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { CommunicationMember } from "@/components/MemberCommunicationDialog";
 import { trpc } from "@/lib/trpc";
 import {
   Activity,
@@ -30,6 +31,7 @@ interface SaaSDashboardProps {
   onOpenChart: () => void;
   onOpenMembers: () => void;
   onOpenSavedCharts: () => void;
+  onOpenCommunication: (member: CommunicationMember) => void;
 }
 
 export default function SaaSDashboard({
@@ -38,6 +40,7 @@ export default function SaaSDashboard({
   onOpenChart,
   onOpenMembers,
   onOpenSavedCharts,
+  onOpenCommunication,
 }: SaaSDashboardProps) {
   const { data: treeData, isLoading } = trpc.matrix.getTree.useQuery({ orgId });
   const { data: membersList } = trpc.member.list.useQuery({ orgId });
@@ -303,14 +306,22 @@ export default function SaaSDashboard({
                 key={m.id}
                 className="p-2 rounded-lg bg-slate-50 border border-slate-100 flex items-center gap-2.5 text-xs"
               >
-                <img
-                  src={
-                    m.avatarUrl ||
-                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80"
-                  }
-                  alt={`${m.firstName} ${m.lastName}`}
-                  className="w-8 h-8 rounded-full object-cover border border-slate-200"
-                />
+                <button
+                  type="button"
+                  onClick={() => onOpenCommunication(m)}
+                  className="group relative shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#9d2025]"
+                  title={`Message ${m.firstName} ${m.lastName}`}
+                >
+                  <img
+                    src={
+                      m.avatarUrl ||
+                      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&h=100&q=80"
+                    }
+                    alt={`Message ${m.firstName} ${m.lastName}`}
+                    className="w-8 h-8 rounded-full object-cover border border-slate-200 transition-transform duration-200 group-hover:scale-105"
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-white bg-[#9d2025] text-[8px] font-bold text-white shadow-sm">+</span>
+                </button>
                 <div className="min-w-0 flex-1 truncate">
                   <div className="font-bold text-slate-900 truncate">
                     {m.firstName} {m.lastName}

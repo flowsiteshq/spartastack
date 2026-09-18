@@ -3,6 +3,7 @@ import ActivityLogDrawer from "@/components/ActivityLogDrawer";
 import AdminAuthGate from "@/components/AdminAuthGate";
 import ChartSettingsView from "@/components/ChartSettingsView";
 import ImportCSVModal from "@/components/ImportCSVModal";
+import MemberCommunicationDialog, { CommunicationMember } from "@/components/MemberCommunicationDialog";
 import MasterListDrawer from "@/components/MasterListDrawer";
 import MemberDetailDrawer from "@/components/MemberDetailDrawer";
 import MembersManagerView from "@/components/MembersManagerView";
@@ -82,6 +83,7 @@ export default function Home() {
   // Member detail drawer
   const [selectedDetailMemberId, setSelectedDetailMemberId] = useState<number | null>(null);
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
+  const [communicationMember, setCommunicationMember] = useState<CommunicationMember | null>(null);
   const [highlightedPlacementId, setHighlightedPlacementId] = useState<number | null>(null);
 
   // Undo / Redo State
@@ -161,6 +163,26 @@ export default function Home() {
     { orgId: activeOrgId },
     { enabled: Boolean(activeOrgId) }
   );
+
+  useEffect(() => {
+    if (
+      typeof window !== "undefined" &&
+      new URLSearchParams(window.location.search).get("communicationPreview") === "true" &&
+      !communicationMember
+    ) {
+      setCommunicationMember(
+        membersList?.[0] || {
+          id: 999,
+          firstName: "Marcus",
+          lastName: "Vance",
+          email: "marcus.vance@spartannation.internal",
+          phone: "+1 (555) 234-5678",
+          avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=160&h=160&q=80",
+          rank: "Spartan Centurion",
+        }
+      );
+    }
+  }, [membersList, communicationMember]);
 
   // Fetch open slots
   const { data: openSlots } = trpc.matrix.getOpenSlots.useQuery(
@@ -246,6 +268,10 @@ export default function Home() {
     setDetailDrawerOpen(true);
   };
 
+  const handleOpenCommunication = (member: CommunicationMember) => {
+    setCommunicationMember(member);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center">
@@ -319,6 +345,7 @@ export default function Home() {
               onClearChart={() => clearChartMutation.mutate({ orgId: activeOrgId })}
               onSelectSlotToAssign={handleSelectSlotToAssign}
               onSelectMemberDetails={handleSelectMemberDetails}
+              onOpenCommunication={handleOpenCommunication}
               onToggleLock={(pId, isL) => toggleLockMutation.mutate({ placementId: pId, isLocked: isL })}
               onUnstack={(pId) => unstackMutation.mutate({ placementId: pId })}
               onAddNewMember={() => {
@@ -342,6 +369,7 @@ export default function Home() {
               onOpenChart={() => setActiveView("chart")}
               onOpenMembers={() => setActiveView("members")}
               onOpenSavedCharts={() => setActiveView("saved-charts")}
+              onOpenCommunication={handleOpenCommunication}
             />
           )}
 
@@ -357,6 +385,7 @@ export default function Home() {
                 setMemberToEdit(m);
                 setMemberModalOpen(true);
               }}
+              onOpenCommunication={handleOpenCommunication}
               onViewInTree={() => setActiveView("chart")}
             />
           )}
@@ -379,6 +408,7 @@ export default function Home() {
             selectedMemberId={selectedDetailMemberId}
             onSelectMember={(mId) => handleSelectMemberDetails(mId)}
             onQuickAddMemberToTree={handleQuickAddMemberToTree}
+            onOpenCommunication={handleOpenCommunication}
             onOpenAddMemberModal={() => {
               setMemberToEdit(null);
               setMemberModalOpen(true);
@@ -467,6 +497,13 @@ export default function Home() {
           setDetailDrawerOpen(false);
         }}
         onToggleLock={(pId, isL) => toggleLockMutation.mutate({ placementId: pId, isLocked: isL })}
+        onOpenCommunication={handleOpenCommunication}
+      />
+
+      <MemberCommunicationDialog
+        member={communicationMember}
+        isOpen={Boolean(communicationMember)}
+        onClose={() => setCommunicationMember(null)}
       />
 
       <ImportCSVModal

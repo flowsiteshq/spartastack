@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { CommunicationMember } from "@/components/MemberCommunicationDialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -78,6 +79,7 @@ interface SaaSTreeCanvasProps {
   onClearChart: () => void;
   onSelectSlotToAssign: (parentId: number | null, positionIndex: number, level: number) => void;
   onSelectMemberDetails: (memberId: number) => void;
+  onOpenCommunication: (member: CommunicationMember) => void;
   onToggleLock: (placementId: number, isLocked?: boolean) => void;
   onUnstack: (placementId: number) => void;
   onAddNewMember: () => void;
@@ -107,6 +109,7 @@ export default function SaaSTreeCanvas({
   onClearChart,
   onSelectSlotToAssign,
   onSelectMemberDetails,
+  onOpenCommunication,
   onToggleLock,
   onUnstack,
   onAddNewMember,
@@ -450,6 +453,7 @@ export default function SaaSTreeCanvas({
                   }
                   onToggleLock={() => onToggleLock(root.placementId, !root.isLocked)}
                   onViewDetails={() => onSelectMemberDetails(root.memberId)}
+                  onOpenCommunication={() => onOpenCommunication(root.member)}
                   onUnstack={() => onUnstack(root.placementId)}
                 />
 
@@ -492,6 +496,7 @@ export default function SaaSTreeCanvas({
                               }
                               onToggleLock={() => onToggleLock(legNode.placementId, !legNode.isLocked)}
                               onViewDetails={() => onSelectMemberDetails(legNode.memberId)}
+                              onOpenCommunication={() => onOpenCommunication(legNode.member)}
                               onUnstack={() => onUnstack(legNode.placementId)}
                             />
 
@@ -506,6 +511,7 @@ export default function SaaSTreeCanvas({
                                 highlightedPlacementId={highlightedPlacementId}
                                 onToggleLock={onToggleLock}
                                 onViewDetails={onSelectMemberDetails}
+                                onOpenCommunication={onOpenCommunication}
                                 onUnstack={onUnstack}
                                 onAssignSlot={(pos) => onSelectSlotToAssign(legNode.placementId, pos, 2)}
                               />
@@ -668,6 +674,7 @@ function ApexCard({
   isHighlighted,
   onToggleLock,
   onViewDetails,
+  onOpenCommunication,
   onUnstack,
 }: {
   node: TreeNode;
@@ -675,6 +682,7 @@ function ApexCard({
   isHighlighted: boolean;
   onToggleLock: () => void;
   onViewDetails: () => void;
+  onOpenCommunication: () => void;
   onUnstack: () => void;
 }) {
   const m = node.member;
@@ -730,14 +738,17 @@ function ApexCard({
 
       {/* Card Content with Photo, Name, Crown, PV, Legs */}
       <div className="p-3.5 flex items-center gap-3">
-        <img
-          src={
-            m.avatarUrl ||
-            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
-          }
-          alt={`${m.firstName} ${m.lastName}`}
-          className="w-12 h-12 rounded-lg object-cover border-2 border-[#d3aa54] shadow-sm flex-shrink-0"
-        />
+        <button type="button" onClick={(event) => { event.stopPropagation(); onOpenCommunication(); }} className="group relative shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#9d2025]" title={`Message ${m.firstName} ${m.lastName}`}>
+          <img
+            src={
+              m.avatarUrl ||
+              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
+            }
+            alt={`Message ${m.firstName} ${m.lastName}`}
+            className="w-12 h-12 rounded-lg object-cover border-2 border-[#d3aa54] shadow-sm transition-transform duration-200 group-hover:scale-[1.03]"
+          />
+          <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-[#9d2025] text-[9px] font-bold text-white shadow-sm">+</span>
+        </button>
         <div className="min-w-0 flex-1">
           <div className="font-extrabold text-slate-900 text-sm truncate leading-tight">
             {m.firstName} {m.lastName}
@@ -768,6 +779,7 @@ function Level1Card({
   isHighlighted,
   onToggleLock,
   onViewDetails,
+  onOpenCommunication,
   onUnstack,
 }: {
   node: TreeNode;
@@ -776,6 +788,7 @@ function Level1Card({
   isHighlighted: boolean;
   onToggleLock: () => void;
   onViewDetails: () => void;
+  onOpenCommunication: () => void;
   onUnstack: () => void;
 }) {
   const m = node.member;
@@ -830,14 +843,17 @@ function Level1Card({
 
       {/* Card Content with Photo, Name, Title, PV, Legs */}
       <div className="p-3 flex items-center gap-3">
-        <img
-          src={
-            m.avatarUrl ||
-            "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80"
-          }
-          alt={`${m.firstName} ${m.lastName}`}
-          className="w-11 h-11 rounded-lg object-cover border-2 border-[#e6caca] shadow-sm flex-shrink-0"
-        />
+        <button type="button" onClick={(event) => { event.stopPropagation(); onOpenCommunication(); }} className="group relative shrink-0 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#9d2025]" title={`Message ${m.firstName} ${m.lastName}`}>
+          <img
+            src={
+              m.avatarUrl ||
+              "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80"
+            }
+            alt={`Message ${m.firstName} ${m.lastName}`}
+            className="w-11 h-11 rounded-lg object-cover border-2 border-[#e6caca] shadow-sm transition-transform duration-200 group-hover:scale-[1.03]"
+          />
+          <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-[#9d2025] text-[9px] font-bold text-white shadow-sm">+</span>
+        </button>
         <div className="min-w-0 flex-1">
           <div className="font-extrabold text-slate-900 text-xs truncate leading-tight">
             {m.firstName} {m.lastName}
@@ -870,6 +886,7 @@ function Level2Subtree({
   highlightedPlacementId,
   onToggleLock,
   onViewDetails,
+  onOpenCommunication,
   onUnstack,
   onAssignSlot,
 }: {
@@ -879,6 +896,7 @@ function Level2Subtree({
   highlightedPlacementId?: number | null;
   onToggleLock: (placementId: number, isLocked?: boolean) => void;
   onViewDetails: (memberId: number) => void;
+  onOpenCommunication: (member: CommunicationMember) => void;
   onUnstack: (placementId: number) => void;
   onAssignSlot: (pos: number) => void;
 }) {
@@ -918,6 +936,7 @@ function Level2Subtree({
                   }
                   onToggleLock={() => onToggleLock(child.placementId, !child.isLocked)}
                   onViewDetails={() => onViewDetails(child.memberId)}
+                  onOpenCommunication={() => onOpenCommunication(child.member)}
                   onUnstack={() => onUnstack(child.placementId)}
                 />
               ) : (
@@ -944,6 +963,7 @@ function Level2Card({
   isHighlighted,
   onToggleLock,
   onViewDetails,
+  onOpenCommunication,
   onUnstack,
 }: {
   node: TreeNode;
@@ -951,6 +971,7 @@ function Level2Card({
   isHighlighted: boolean;
   onToggleLock: () => void;
   onViewDetails: () => void;
+  onOpenCommunication: () => void;
   onUnstack: () => void;
 }) {
   const m = node.member;
@@ -1004,14 +1025,17 @@ function Level2Card({
 
       {/* Photo Avatar centered */}
       <div className="flex flex-col items-center px-2 pb-2.5">
-        <img
-          src={
-            m.avatarUrl ||
-            "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80"
-          }
-          alt={`${m.firstName} ${m.lastName}`}
-          className="w-10 h-10 rounded-lg object-cover border border-slate-200 shadow-sm"
-        />
+        <button type="button" onClick={(event) => { event.stopPropagation(); onOpenCommunication(); }} className="group relative rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-[#9d2025]" title={`Message ${m.firstName} ${m.lastName}`}>
+          <img
+            src={
+              m.avatarUrl ||
+              "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=120&h=120&q=80"
+            }
+            alt={`Message ${m.firstName} ${m.lastName}`}
+            className="w-10 h-10 rounded-lg object-cover border border-slate-200 shadow-sm transition-transform duration-200 group-hover:scale-[1.04]"
+          />
+          <span className="absolute -bottom-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border border-white bg-[#9d2025] text-[8px] font-bold text-white shadow-sm">+</span>
+        </button>
         <div className="font-extrabold text-slate-900 text-xs truncate max-w-full text-center mt-1.5 leading-tight">
           {m.firstName} {m.lastName}
         </div>

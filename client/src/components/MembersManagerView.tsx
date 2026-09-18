@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { trpc } from "@/lib/trpc";
+import { CommunicationMember } from "@/components/MemberCommunicationDialog";
 import {
   CheckCircle2,
   Clock,
@@ -21,6 +22,7 @@ import {
   Edit,
   Filter,
   Mail,
+  MessageCircle,
   MoreVertical,
   Phone,
   Plus,
@@ -42,6 +44,7 @@ interface MembersManagerViewProps {
   onOpenImportCSVModal: () => void;
   onEditMember: (member: Member) => void;
   onViewInTree: () => void;
+  onOpenCommunication: (member: CommunicationMember) => void;
 }
 
 export default function MembersManagerView({
@@ -50,6 +53,7 @@ export default function MembersManagerView({
   onOpenImportCSVModal,
   onEditMember,
   onViewInTree,
+  onOpenCommunication,
 }: MembersManagerViewProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "unplaced" | "placed">("all");
@@ -249,14 +253,22 @@ export default function MembersManagerView({
                     {/* Photo + Name */}
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
-                        <img
-                          src={
-                            m.avatarUrl ||
-                            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80"
-                          }
-                          alt=""
-                          className="w-9 h-9 rounded-full object-cover border border-slate-200"
-                        />
+                        <button
+                          type="button"
+                          onClick={() => onOpenCommunication(m)}
+                          className="group relative rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#9d2025]"
+                          title={`Message ${m.firstName} ${m.lastName}`}
+                        >
+                          <img
+                            src={
+                              m.avatarUrl ||
+                              "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80"
+                            }
+                            alt={`Message ${m.firstName} ${m.lastName}`}
+                            className="w-9 h-9 rounded-full object-cover border border-slate-200 transition-transform duration-200 group-hover:scale-105"
+                          />
+                          <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-[#9d2025] text-[9px] font-bold text-white shadow-sm">+</span>
+                        </button>
                         <div>
                           <span className="font-bold text-slate-900 block">
                             {m.firstName} {m.lastName}
@@ -322,6 +334,17 @@ export default function MembersManagerView({
                           </Button>
                         )}
 
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => onOpenCommunication(m)}
+                          className="h-7 w-7 text-slate-400 hover:bg-[#f8ebe9] hover:text-[#9d2025]"
+                          title={`Email or text ${m.firstName} ${m.lastName}`}
+                        >
+                          <MessageCircle className="h-3.5 w-3.5" />
+                          <span className="sr-only">Message {m.firstName} {m.lastName}</span>
+                        </Button>
+
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button className="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-slate-700">
@@ -329,6 +352,10 @@ export default function MembersManagerView({
                             </button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end" className="text-xs">
+                            <DropdownMenuItem onClick={() => onOpenCommunication(m)} className="cursor-pointer text-[#9d2025]">
+                              <Mail className="w-3.5 h-3.5 mr-2" />
+                              Email or Text Member
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => onEditMember(m)} className="cursor-pointer">
                               <Edit className="w-3.5 h-3.5 mr-2 text-slate-500" />
                               Edit Member

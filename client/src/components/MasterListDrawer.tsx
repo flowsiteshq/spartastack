@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CommunicationMember } from "@/components/MemberCommunicationDialog";
 import {
   ChevronLeft,
   ChevronRight,
@@ -20,6 +21,7 @@ interface MasterListDrawerProps {
   onQuickAddMemberToTree: (member: MemberWithPlacement) => void;
   onOpenAddMemberModal: () => void;
   onOpenImportCSVModal: () => void;
+  onOpenCommunication: (member: CommunicationMember) => void;
   isOpen: boolean;
   onToggleOpen: () => void;
 }
@@ -31,6 +33,7 @@ export default function MasterListDrawer({
   onQuickAddMemberToTree,
   onOpenAddMemberModal,
   onOpenImportCSVModal,
+  onOpenCommunication,
   isOpen,
   onToggleOpen,
 }: MasterListDrawerProps) {
@@ -153,22 +156,29 @@ export default function MasterListDrawer({
               }`}
             >
               {/* Member Avatar + Name + Title */}
-              <div
-                className="flex items-center gap-2.5 min-w-0 flex-1 cursor-pointer"
-                onClick={() => onSelectMember(member.id)}
-              >
-                <img
-                  src={
-                    member.avatarUrl ||
-                    "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80"
-                  }
-                  alt={`${member.firstName} ${member.lastName}`}
-                  className="w-9 h-9 rounded-full object-cover border border-slate-200 flex-shrink-0"
-                />
+              <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                <button
+                  type="button"
+                  onClick={() => onOpenCommunication(member)}
+                  className="group relative shrink-0 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-[#9d2025]"
+                  title={`Message ${member.firstName} ${member.lastName}`}
+                >
+                  <img
+                    src={
+                      member.avatarUrl ||
+                      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80"
+                    }
+                    alt={`Message ${member.firstName} ${member.lastName}`}
+                    className="w-9 h-9 rounded-full object-cover border border-slate-200 transition-transform duration-200 group-hover:scale-105"
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-[#9d2025] text-[9px] font-bold text-white shadow-sm">+</span>
+                </button>
                 <div className="min-w-0 flex-1">
-                  <div className="font-bold text-slate-900 text-xs truncate leading-tight">
-                    {member.firstName} {member.lastName}
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => onSelectMember(member.id)}
+                    className="block max-w-full truncate text-left font-bold text-slate-900 text-xs leading-tight hover:text-[#9d2025]"
+                  >{member.firstName} {member.lastName}</button>
                   <div className="text-[10px] text-slate-500 font-medium truncate">
                     {member.rank}
                   </div>
