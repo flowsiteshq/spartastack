@@ -54,6 +54,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     openId: user.openId,
     name: user.name ?? null,
     email: user.email ?? null,
+    phone: user.phone ?? null,
+    avatarUrl: user.avatarUrl ?? null,
     loginMethod: user.loginMethod ?? null,
     role: user.role ?? "user",
     lastSignedIn: user.lastSignedIn ?? new Date(),
@@ -64,6 +66,8 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       name: values.name,
       email: values.email,
       loginMethod: values.loginMethod,
+      ...(user.phone !== undefined ? { phone: values.phone } : {}),
+      ...(user.avatarUrl !== undefined ? { avatarUrl: values.avatarUrl } : {}),
       ...(user.role ? { role: values.role } : {}),
       lastSignedIn: values.lastSignedIn,
     },
@@ -75,6 +79,105 @@ export async function getUserByOpenId(openId: string): Promise<User | undefined>
   if (!db) return undefined;
   const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
   return result[0];
+}
+
+export async function getUserById(id: number): Promise<User | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result[0];
+}
+
+export type OnboardingMode = "stack_owner" | "member";
+
+export type OnboardingInvite = {
+  name: string;
+  email: string;
+};
+
+export type OnboardingProfileInput = {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  phone?: string | null;
+  avatarUrl?: string | null;
+};
+
+function normalizeInviteName(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] || "New",
+    lastName: parts.slice(1).join(" ") || "Member",
+  };
+}
+
+function makeOrganizationCode(name: string, userId: number) {
+  const slug = name
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 42) || "SPARTAN-STACK";
+  return `${slug}-${userId}-${Date.now().toString().slice(-6)}`;
+}
+
+export async function saveOnboardingProfile(input: OnboardingProfileInput): Promise<User> {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const current = await getUserById(input.userId);
+  if (!current) throw new Error("Signed-in user was not found");
+
+  const fullName = `${input.firstName.trim()} ${input.lastName.trim()}`.trim();
+  if (!fullName) throw new Error("Your name is required");
+
+  await db
+    .update(users)
+    .set({
+      name: fullName,
+      phone: input.phone?.trim() || null,
+      ...(input.avatarUrl ? { avatarUrl: input.avatarUrl } : {}),
+    })
+    .where(eq(users.id, input.userId));
+
+  const updated = await getUserById(input.userId);
+  if (!updated) throw new Error("Profile could not be saved");
+  return updated;
+}
+
+export async function getOnboardingStatus(userId: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const user = await getUserById(userId);
+  if (!user) throw new Error("Signed-in user was not found");
+  const ownedStacks = await db
+    .select({ id: organizations.id, name: organizations.name, code: organizations.code })
+    .from(organizations)
+    .where(eq(organizations.ownerUserId, userId))
+    .orderBy(desc(organizations.createdAt));
+
+  return {
+    completed: Boolean(user.onboardingCompletedAt),
+    completedAt: user.onboardingCompletedAt,
+    mode: user.onboardingMode,
+    profile: {
+      firstName: user.name?.trim().split(/\s+/)[0] || "",
+      lastName: user.name?.trim().split(/\s+/).slice(1).join(" ") || "",
+      phone: user.phone || "",
+      avatarUrl: user.avatarUrl || null,
+    },
+    ownedStacks,
+  };
+}
+
+export async function completeMemberOnboarding(userId: number): Promise<User> {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  await db
+    .update(users)
+    .set({ onboardingMode: "member", onboardingCompletedAt: new Date() })
+    .where(eq(users.id, userId));
+  const updated = await getUserById(userId);
+  if (!updated) throw new Error("Profile could not be updated");
+  return updated;
 }
 
 // ========================================================
@@ -138,6 +241,121 @@ export async function createOrganization(data: InsertOrganization): Promise<Orga
   if (!created) throw new Error("Failed to create organization");
   await logActivity(created.id, "Administrator", `Created organization ${created.name}`, "create_org");
   return created;
+}
+
+export async function createFounderStackFromOnboarding(input: {
+  userId: number;
+  stackName: string;
+  description?: string | null;
+  invites?: OnboardingInvite[];
+}): Promise<{ organization: Organization; founder: Member; invitedCount: number }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database unavailable");
+  const user = await getUserById(input.userId);
+  if (!user) throw new Error("Signed-in user was not found");
+  if (!user.name?.trim()) throw new Error("Complete your profile before creating a stack");
+
+  const cleanedStackName = input.stackName.trim();
+  if (cleanedStackName.length < 2) throw new Error("Your stack name must be at least 2 characters");
+  const nameParts = normalizeInviteName(user.name);
+  const organization = await createOrganization({
+    name: cleanedStackName,
+    code: makeOrganizationCode(cleanedStackName, user.id),
+    description: input.description?.trim() || null,
+    blueprintCode: "3X5-STANDARD",
+    logoUrl: null,
+    matrixWidth: 3,
+    matrixDepth: 5,
+    ownerUserId: user.id,
+  });
+
+  try {
+    const founder = await createMember({
+      orgId: organization.id,
+      firstName: nameParts.firstName,
+      lastName: nameParts.lastName,
+      email: user.email || `member-${user.id}@spartanstack.local`,
+      phone: user.phone || null,
+      avatarUrl: user.avatarUrl || null,
+      rank: "Crown Director",
+      personalVolume: 0,
+      status: "active",
+      notes: "Founder profile created during Spartan Stack setup.",
+    });
+
+    await placeMemberInSlot({
+      orgId: organization.id,
+      memberId: founder.id,
+      parentId: null,
+      positionIndex: 0,
+      isLocked: true,
+      notes: "Founder apex position",
+    });
+
+    await createOrUpdateNetworkMembership({
+      orgId: organization.id,
+      memberId: founder.id,
+      userId: user.id,
+      matchMethod: "email",
+      status: "active",
+      accessLevel: "full",
+      approvedByUserId: user.id,
+    });
+
+    const distinctInvites = Array.from(
+      new Map(
+        (input.invites || [])
+          .map((invite) => ({ name: invite.name.trim(), email: invite.email.trim().toLowerCase() }))
+          .filter((invite) => invite.name && invite.email && invite.email !== user.email?.toLowerCase())
+          .map((invite) => [invite.email, invite])
+      ).values()
+    ).slice(0, 8);
+
+    let invitedCount = 0;
+    for (const invite of distinctInvites) {
+      const invitee = normalizeInviteName(invite.name);
+      await createMember({
+        orgId: organization.id,
+        firstName: invitee.firstName,
+        lastName: invitee.lastName,
+        email: invite.email,
+        phone: null,
+        avatarUrl: null,
+        rank: "Associate",
+        personalVolume: 0,
+        status: "pending",
+        notes: "Added during stack setup. Invite delivery can be sent from Messages.",
+      });
+      invitedCount += 1;
+    }
+
+    await db
+      .update(users)
+      .set({
+        role: "admin",
+        onboardingMode: "stack_owner",
+        onboardingCompletedAt: new Date(),
+      })
+      .where(eq(users.id, user.id));
+    await logActivity(
+      organization.id,
+      user.name,
+      `Established ${organization.name} and claimed the Apex founder position`,
+      "onboarding_stack_created",
+    );
+    if (invitedCount > 0) {
+      await logActivity(
+        organization.id,
+        user.name,
+        `Added ${invitedCount} pending launch member${invitedCount === 1 ? "" : "s"} during setup`,
+        "onboarding_invites_added",
+      );
+    }
+    return { organization, founder, invitedCount };
+  } catch (error) {
+    await deleteOrganization(organization.id).catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function updateOrganization(

@@ -74,18 +74,28 @@ describe("MLM Matrix Stacking System", () => {
     const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
-    const orgs = await caller.org.list();
-    const orgId = orgs[0].id;
+    // Create an isolated organization so parallel test suites do not mutate counts
+    const isolatedOrg = await caller.org.create({
+      name: `Directory Test Org ${Date.now()}`,
+      code: `DIR-${Date.now().toString().slice(-6)}`,
+      description: "Isolated directory test",
+    });
+    const orgId = isolatedOrg.id;
 
-    // Ensure unplaced members exist
-    let unplacedMembers = await caller.member.list({ orgId, status: "unplaced" });
-    if (unplacedMembers.length === 0) {
-      await caller.member.batchGenerate({ orgId, count: 5 });
-      unplacedMembers = await caller.member.list({ orgId, status: "unplaced" });
-    }
+    await caller.member.batchGenerate({ orgId, count: 6 });
+    const unplacedSeed = await caller.member.list({ orgId, status: "unplaced" });
+    await caller.matrix.place({
+      orgId,
+      memberId: unplacedSeed[0].id,
+      parentId: null,
+      positionIndex: 0,
+    });
 
-    const allMembers = await caller.member.list({ orgId, status: "all" });
-    const placedMembers = await caller.member.list({ orgId, status: "placed" });
+    const [allMembers, placedMembers, unplacedMembers] = await Promise.all([
+      caller.member.list({ orgId, status: "all" }),
+      caller.member.list({ orgId, status: "placed" }),
+      caller.member.list({ orgId, status: "unplaced" }),
+    ]);
 
     expect(allMembers.length).toBeGreaterThan(0);
     expect(placedMembers.length).toBeGreaterThan(0);

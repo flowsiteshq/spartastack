@@ -6,6 +6,20 @@ import { sdk } from "./_core/sdk";
 import { systemRouter } from "./_core/systemRouter";
 import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import * as db from "./db";
+import { storagePut } from "./storage";
+
+function decodeProfilePhoto(dataUrl: string) {
+  const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl.trim());
+  if (!match) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Use a PNG, JPEG, or WebP profile photo" });
+  }
+  const bytes = Buffer.from(match[2], "base64");
+  if (bytes.length === 0 || bytes.length > 4 * 1024 * 1024) {
+    throw new TRPCError({ code: "BAD_REQUEST", message: "Profile photo must be smaller than 4 MB" });
+  }
+  const extension = match[1].split("/")[1] === "jpeg" ? "jpg" : match[1].split("/")[1];
+  return { bytes, contentType: match[1].toLowerCase(), extension };
+}
 
 export const appRouter = router({
   system: systemRouter,
@@ -65,6 +79,80 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+  }),
+
+  // ========================================================
+  // Required First-Login Account and Stack Onboarding
+  // ========================================================
+  onboarding: router({
+    status: protectedProcedure.query(async ({ ctx }) => {
+      return db.getOnboardingStatus(ctx.user.id);
+    }),
+
+    saveProfile: protectedProcedure
+      .input(
+        z.object({
+          firstName: z.string().trim().min(1, "First name is required").max(128),
+          lastName: z.string().trim().min(1, "Last name is required").max(128),
+          phone: z.string().trim().max(64).optional(),
+          avatarDataUrl: z.string().max(6_000_000).optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        let avatarUrl: string | undefined;
+        if (input.avatarDataUrl) {
+          const image = decodeProfilePhoto(input.avatarDataUrl);
+          const stored = await storagePut(
+            `member-profiles/${ctx.user.id}/profile.${image.extension}`,
+            image.bytes,
+            image.contentType,
+          );
+          avatarUrl = stored.url;
+        }
+        return db.saveOnboardingProfile({
+          userId: ctx.user.id,
+          firstName: input.firstName,
+          lastName: input.lastName,
+          phone: input.phone,
+          avatarUrl,
+        });
+      }),
+
+    completeMember: protectedProcedure.mutation(async ({ ctx }) => {
+      return db.completeMemberOnboarding(ctx.user.id);
+    }),
+
+    createStack: protectedProcedure
+      .input(
+        z.object({
+          stackName: z.string().trim().min(2, "Stack name must be at least 2 characters").max(191),
+          description: z.string().trim().max(1200).optional(),
+          invites: z
+            .array(
+              z.object({
+                name: z.string().trim().min(1).max(191),
+                email: z.string().trim().email().max(320),
+              })
+            )
+            .max(8)
+            .optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        try {
+          return await db.createFounderStackFromOnboarding({
+            userId: ctx.user.id,
+            stackName: input.stackName,
+            description: input.description,
+            invites: input.invites,
+          });
+        } catch (error) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: error instanceof Error ? error.message : "Unable to create your stack",
+          });
+        }
+      }),
   }),
 
   // ========================================================

@@ -213,14 +213,14 @@ export default function SaaSNavigation({
             <DropdownMenuTrigger asChild>
               <div className="flex items-center gap-2.5 pl-2 cursor-pointer group">
                 <Avatar className="w-9 h-9 border-2 border-amber-400 shadow-sm">
-                  <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80" />
-                  <AvatarFallback className="bg-amber-600 text-white font-bold text-xs">LM</AvatarFallback>
+                  <AvatarImage src={user?.avatarUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80"} />
+                  <AvatarFallback className="bg-amber-600 text-white font-bold text-xs">{user?.name?.slice(0, 2).toUpperCase() || "SS"}</AvatarFallback>
                 </Avatar>
                 <div className="hidden xl:block text-left leading-tight">
                   <div className="text-xs font-bold text-white group-hover:text-[#e3c578] transition-colors">
-                    Lead Matrix Architect
+                    {user?.name || "Spartan Stack Member"}
                   </div>
-                  <div className="text-[10px] text-slate-400 font-medium">Administrator</div>
+                  <div className="text-[10px] text-slate-400 font-medium">{user?.role === "admin" ? "Administrator" : "Member"}</div>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-white" />
               </div>

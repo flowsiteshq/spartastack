@@ -266,14 +266,14 @@ export default function MobileNavigation({
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2.5">
                     <Avatar className="w-8 h-8 border border-[#d3aa54]">
-                      <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80" />
-                      <AvatarFallback className="bg-amber-600 text-white text-[10px]">LM</AvatarFallback>
+                      <AvatarImage src={user?.avatarUrl || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=120&h=120&q=80"} />
+                      <AvatarFallback className="bg-amber-600 text-white text-[10px]">{user?.name?.slice(0, 2).toUpperCase() || "SS"}</AvatarFallback>
                     </Avatar>
                     <div className="text-left leading-tight">
                       <div className="text-xs font-bold text-white truncate max-w-[130px]">
                         {user?.name || "Lead Matrix Architect"}
                       </div>
-                      <div className="text-[10px] text-slate-400">Administrator</div>
+                      <div className="text-[10px] text-slate-400">{user?.role === "admin" ? "Administrator" : "Member"}</div>
                     </div>
                   </div>
 

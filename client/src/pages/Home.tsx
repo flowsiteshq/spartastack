@@ -20,6 +20,7 @@ import SaaSTreeCanvas from "@/components/SaaSTreeCanvas";
 import SaveChartModal from "@/components/SaveChartModal";
 import SavedChartsManager from "@/components/SavedChartsManager";
 import SpartanBrand from "@/components/SpartanBrand";
+import StackOnboarding from "@/components/StackOnboarding";
 import { trpc } from "@/lib/trpc";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -27,7 +28,7 @@ import { Member } from "../../../drizzle/schema";
 import { MemberWithPlacement } from "../../../server/db";
 
 export default function Home() {
-  const { user, loading, isAuthenticated, logout } = useAuth();
+  const { user, loading, isAuthenticated, logout, refresh } = useAuth();
   const authError =
     typeof window !== "undefined"
       ? new URLSearchParams(window.location.search).get("authError")
@@ -105,6 +106,10 @@ export default function Home() {
   const [redoStack, setRedoStack] = useState<number[]>([]);
 
   const utils = trpc.useUtils();
+  const onboardingQuery = trpc.onboarding.status.useQuery(undefined, {
+    enabled: Boolean(isAuthenticated && user),
+    retry: false,
+  });
 
   // Fetch organizations
   const isAdministrator = user?.role === "admin";
@@ -114,7 +119,11 @@ export default function Home() {
 
   useEffect(() => {
     if (orgs && orgs.length > 0 && selectedOrgId === null) {
-      setSelectedOrgId(orgs[0].id);
+      const requestedStackId = typeof window !== "undefined"
+        ? Number(new URLSearchParams(window.location.search).get("stackId"))
+        : NaN;
+      const requestedStack = orgs.find((org) => org.id === requestedStackId);
+      setSelectedOrgId(requestedStack?.id || orgs[0].id);
     }
   }, [orgs, selectedOrgId]);
 
@@ -323,6 +332,49 @@ export default function Home() {
       <MemberNetworkAccess
         user={{ name: "Sarah Conway", email: "sarah.conway@gmail.com" }}
         onLogout={logout}
+      />
+    );
+  }
+
+  const forceOnboardingPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("previewOnboarding") === "true";
+
+  if (forceOnboardingPreview) {
+    return (
+      <StackOnboarding
+        user={user || { name: "Sensei Spartan", email: "sensei30002003@gmail.com", avatarUrl: null }}
+        profile={{ firstName: "", lastName: "", phone: "", avatarUrl: null }}
+        onLogout={logout}
+        onComplete={() => {}}
+      />
+    );
+  }
+
+  if (onboardingQuery.isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f7f6f3] flex items-center justify-center">
+        <div className="bg-white p-8 rounded-2xl shadow-xl text-center space-y-3 border border-[#ded4c3]">
+          <div className="w-8 h-8 border-3 border-[#9d2025] border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-xs font-bold text-slate-700">Preparing your secure account setup...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!onboardingQuery.data?.completed) {
+    return (
+      <StackOnboarding
+        user={user}
+        profile={onboardingQuery.data?.profile || { firstName: "", lastName: "", phone: "", avatarUrl: null }}
+        onLogout={logout}
+        onComplete={async (createdOrgId) => {
+          await Promise.all([refresh(), onboardingQuery.refetch(), utils.org.list.invalidate()]);
+          if (createdOrgId) {
+            window.history.replaceState({}, "", `/?stackId=${createdOrgId}`);
+            setSelectedOrgId(createdOrgId);
+          }
+        }}
       />
     );
   }
