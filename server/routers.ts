@@ -102,12 +102,26 @@ export const appRouter = router({
         let avatarUrl: string | undefined;
         if (input.avatarDataUrl) {
           const image = decodeProfilePhoto(input.avatarDataUrl);
-          const stored = await storagePut(
-            `member-profiles/${ctx.user.id}/profile.${image.extension}`,
-            image.bytes,
-            image.contentType,
-          );
-          avatarUrl = stored.url;
+          try {
+            const stored = await storagePut(
+              `member-profiles/${ctx.user.id}/profile.${image.extension}`,
+              image.bytes,
+              image.contentType,
+            );
+            avatarUrl = stored.url;
+          } catch (error) {
+            // The production host may temporarily be missing the optional Forge
+            // storage variables. A compact, validated data URI keeps account
+            // creation usable while preserving the photo on the protected user row.
+            console.warn("[Onboarding] Profile image storage unavailable; saving compact inline photo", error);
+            if (input.avatarDataUrl.length > 60_000) {
+              throw new TRPCError({
+                code: "BAD_REQUEST",
+                message: "Photo storage is temporarily unavailable. Please choose a smaller profile photo and try again.",
+              });
+            }
+            avatarUrl = input.avatarDataUrl;
+          }
         }
         return db.saveOnboardingProfile({
           userId: ctx.user.id,
