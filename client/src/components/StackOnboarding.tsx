@@ -121,7 +121,14 @@ export default function StackOnboarding({ user, profile, onLogout, onComplete }:
       toast.success("Your Spartan profile is ready");
       setStep("journey");
     },
-    onError: (error) => toast.error("Unable to save your profile", { description: error.message }),
+    onError: (error) => {
+      const sessionExpired = error.data?.code === "UNAUTHORIZED";
+      toast.error(sessionExpired ? "Your sign-in needs a quick refresh" : "Unable to save your profile", {
+        description: sessionExpired
+          ? "Your profile details remain on this screen. Tap Sign out, then continue with Google again to renew your session."
+          : error.message,
+      });
+    },
   });
 
   const createStack = trpc.onboarding.createStack.useMutation({

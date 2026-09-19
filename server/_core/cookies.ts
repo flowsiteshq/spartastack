@@ -42,7 +42,10 @@ export function getSessionCookieOptions(
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
+    // Google returns to this app through a normal top-level GET redirect.
+    // Lax preserves the OAuth callback cookie in Safari/iOS while preventing
+    // the browser from treating the application session as a third-party cookie.
+    sameSite: "lax",
     secure: isSecureRequest(req),
   };
 }

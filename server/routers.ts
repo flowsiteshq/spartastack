@@ -113,7 +113,10 @@ export const appRouter = router({
             // The production host may temporarily be missing the optional Forge
             // storage variables. A compact, validated data URI keeps account
             // creation usable while preserving the photo on the protected user row.
-            console.warn("[Onboarding] Profile image storage unavailable; saving compact inline photo", error);
+            console.warn(
+              "[Onboarding] Profile image storage unavailable; saving compact inline photo:",
+              error instanceof Error ? error.message : "unknown error",
+            );
             if (input.avatarDataUrl.length > 60_000) {
               throw new TRPCError({
                 code: "BAD_REQUEST",

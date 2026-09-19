@@ -10,7 +10,7 @@ import "./index.css";
 
 const queryClient = new QueryClient();
 
-const redirectToLoginIfUnauthorized = (error: unknown) => {
+const redirectToLoginIfUnauthorized = (error: unknown, source: "query" | "mutation") => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
 
@@ -18,13 +18,18 @@ const redirectToLoginIfUnauthorized = (error: unknown) => {
 
   if (!isUnauthorized) return;
 
+  // A mutation may fail while the browser is restoring a newly issued OAuth
+  // session. Do not discard the onboarding form and bounce the member back to
+  // sign-in; the component keeps their entered details and shows its error.
+  if (source === "mutation") return;
+
   startGoogleLogin();
 };
 
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
-    redirectToLoginIfUnauthorized(error);
+    redirectToLoginIfUnauthorized(error, "query");
     console.error("[API Query Error]", error);
   }
 });
@@ -32,7 +37,7 @@ queryClient.getQueryCache().subscribe(event => {
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
-    redirectToLoginIfUnauthorized(error);
+    redirectToLoginIfUnauthorized(error, "mutation");
     console.error("[API Mutation Error]", error);
   }
 });
