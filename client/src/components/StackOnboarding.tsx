@@ -64,7 +64,10 @@ async function compressProfilePhoto(file: File): Promise<string> {
       element.onerror = () => reject(new Error("The selected photo could not be read"));
       element.src = imageUrl;
     });
-    const side = Math.min(720, Math.max(280, Math.min(image.naturalWidth, image.naturalHeight)));
+    // Keep a compact, square identity image. This is intentionally sized for
+    // reliable profile rendering on mobile and remains small enough for the
+    // protected inline fallback when hosted storage is temporarily offline.
+    const side = Math.min(160, Math.max(128, Math.min(image.naturalWidth, image.naturalHeight)));
     const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
     const sourceX = Math.max(0, (image.naturalWidth - sourceSize) / 2);
     const sourceY = Math.max(0, (image.naturalHeight - sourceSize) / 2);
@@ -74,7 +77,7 @@ async function compressProfilePhoto(file: File): Promise<string> {
     const context = canvas.getContext("2d");
     if (!context) throw new Error("Photo processing is unavailable in this browser");
     context.drawImage(image, sourceX, sourceY, sourceSize, sourceSize, 0, 0, side, side);
-    return canvas.toDataURL("image/jpeg", 0.86);
+    return canvas.toDataURL("image/jpeg", 0.68);
   } finally {
     URL.revokeObjectURL(imageUrl);
   }
