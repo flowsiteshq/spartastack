@@ -7,6 +7,7 @@ import {
   LockKeyhole,
   Network,
   ShieldCheck,
+  UserPlus,
   UsersRound,
 } from "lucide-react";
 
@@ -20,8 +21,8 @@ const authErrors: Record<string, { title: string; detail: string }> = {
     detail: "Choose an approved Google account to continue.",
   },
   access_denied: {
-    title: "This Google account could not be verified",
-    detail: "Use a verified Google account, then match your email or phone number to an existing network profile.",
+    title: "We couldn't match this account to a Spartan Stack profile",
+    detail: "Try another Google account, or continue and use your verified email or phone number to request access to an existing network.",
   },
   invalid_google_state: {
     title: "Your sign-in session expired",
@@ -89,17 +90,8 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
               </p>
             </div>
 
-            {message && (
-              <div role="alert" className="mt-7 flex max-w-[34rem] gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-950">
-                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                <div>
-                  <p className="font-bold">{message.title}</p>
-                  <p className="mt-0.5 leading-5 text-amber-800">{message.detail}</p>
-                </div>
-              </div>
-            )}
-
-            <div className="mt-7 max-w-[34rem] sm:mt-9">
+            {/* The same secure Google path signs in existing people and creates a new member account. */}
+            <div className="mt-6 max-w-[34rem] sm:mt-7">
               <Button
                 onClick={startGoogleLogin}
                 className="group h-14 w-full rounded-xl border border-[#d7d2ca] bg-white px-5 text-[15px] font-extrabold text-[#191714] shadow-[0_3px_0_rgba(38,29,20,0.05),0_8px_20px_rgba(38,29,20,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#c79b46] hover:bg-[#fffdf8] hover:shadow-[0_5px_0_rgba(38,29,20,0.04),0_15px_25px_rgba(38,29,20,0.12)] active:translate-y-0 active:scale-[0.985] focus-visible:ring-[#9d2025]"
@@ -109,14 +101,31 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
                 <ArrowRight className="ml-auto h-4 w-4 text-[#695d4d] transition-transform duration-200 group-hover:translate-x-1" />
               </Button>
 
-              <p className="mt-4 text-center text-xs leading-5 text-slate-500">
-                Sign in securely to access your Spartan Stack membership and organization.
-              </p>
-
-              <div className="mt-4 flex gap-3 rounded-xl border border-[#edf0f3] bg-[#f5f7f9] px-4 py-3 text-xs leading-5 text-slate-600">
-                <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-[#6c7480]" />
-                <p>Your organization controls access. Your profile information remains private unless you choose to share it.</p>
+              <div className="mt-3 flex gap-2.5 rounded-xl border border-[#e7e1d6] bg-[#fcfaf6] px-3.5 py-3 text-xs leading-5 text-slate-600">
+                <UserPlus className="mt-0.5 h-4 w-4 shrink-0 text-[#9d2025]" />
+                <p>
+                  <span className="font-extrabold text-[#2a211a]">New to Spartan Stack?</span> This same step creates your secure member account. Afterward, we’ll help you join an existing network through your verified email or phone number.
+                </p>
               </div>
+
+              <p className="mt-3 text-center text-xs leading-5 text-slate-500">
+                Sign in securely to access your Spartan Stack membership and organization—no password to remember.
+              </p>
+            </div>
+
+            {message && (
+              <div role="alert" className="mt-5 flex max-w-[34rem] gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-950">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                <div>
+                  <p className="font-bold">{message.title}</p>
+                  <p className="mt-0.5 leading-5 text-amber-800">{message.detail}</p>
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 flex max-w-[34rem] gap-3 rounded-xl border border-[#edf0f3] bg-[#f5f7f9] px-4 py-3 text-xs leading-5 text-slate-600">
+              <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-[#6c7480]" />
+              <p>Your organization controls access. Your profile information remains private unless you choose to share it.</p>
             </div>
           </div>
 
