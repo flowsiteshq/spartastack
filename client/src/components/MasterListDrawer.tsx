@@ -58,21 +58,21 @@ export default function MasterListDrawer({
 
   if (!isOpen) {
     return (
-      <div className="fixed right-0 top-20 z-30">
+      <div className="fixed right-0 bottom-16 md:bottom-auto md:top-20 z-30">
         <button
           onClick={onToggleOpen}
-          className="bg-white border-l border-y border-slate-300 rounded-l-xl p-2.5 shadow-md text-slate-600 hover:text-[#1d70f5] flex items-center gap-1.5 text-xs font-bold transition-all"
+          className="bg-white border-l border-y border-[#d3aa54]/80 rounded-l-xl px-2.5 py-2 md:py-2.5 shadow-md text-slate-800 hover:text-[#9d2025] flex items-center gap-1.5 text-xs font-bold transition-all"
           title="Open Master Member List"
         >
           <ChevronLeft className="w-4 h-4" />
-          <span className="hidden sm:inline">Master List</span>
+          <span className="inline">Master List</span>
         </button>
       </div>
     );
   }
 
   return (
-    <aside className="w-72 sm:w-80 bg-white border-l border-slate-200/90 flex flex-col justify-between h-[calc(100vh-4rem)] sticky top-16 shadow-lg z-30 flex-shrink-0">
+    <aside className="fixed inset-y-0 right-0 z-50 w-full sm:w-84 md:sticky md:top-16 md:z-30 md:w-80 bg-white border-l border-slate-200/90 flex flex-col justify-between h-full md:h-[calc(100vh-4rem)] shadow-2xl md:shadow-lg flex-shrink-0">
       {/* Header with Tabs: Master List | Member Details */}
       <div className="p-4 border-b border-slate-100 space-y-3">
         <div className="flex items-center justify-between">

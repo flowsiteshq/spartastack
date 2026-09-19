@@ -154,13 +154,13 @@ export default function SaaSTreeCanvas({
       {/* ======================================================== */}
       {/* Top Organization Header Card matching mockup */}
       {/* ======================================================== */}
-      <div className="bg-white rounded-xl p-5 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white rounded-xl p-3.5 sm:p-5 border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3.5">
         {/* Left title with Spartan gold accent */}
-        <div className="flex items-center gap-3.5">
+        <div className="flex items-center gap-3">
           <div className="w-1.5 h-10 rounded-full bg-[#d3aa54]" />
-          <div>
-            <div className="flex items-center gap-3">
-              <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h1 className="text-base sm:text-2xl font-extrabold text-slate-900 tracking-tight truncate max-w-[200px] sm:max-w-none">
                 {orgName}
               </h1>
               {/* Organization Switcher Dropdown */}
@@ -191,9 +191,9 @@ export default function SaaSTreeCanvas({
         </div>
 
         {/* Right Stats & Save Chart Button */}
-        <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
           {/* 11 Members Badge */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f8ebe9] border border-[#ecd0cf]">
+          <div className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#f8ebe9] border border-[#ecd0cf]">
             <div className="w-6 h-6 rounded-full bg-[#9d2025] text-white flex items-center justify-center">
               <Users className="w-3.5 h-3.5" />
             </div>
@@ -204,7 +204,7 @@ export default function SaaSTreeCanvas({
           </div>
 
           {/* 4 Open Positions Badge */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f6edda] border border-[#e8d6aa]">
+          <div className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#f6edda] border border-[#e8d6aa]">
             <div className="w-6 h-6 rounded-full bg-[#b3832e] text-white flex items-center justify-center">
               <UserPlus className="w-3.5 h-3.5" />
             </div>
@@ -215,7 +215,7 @@ export default function SaaSTreeCanvas({
           </div>
 
           {/* 73% Completion Badge */}
-          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#f1f1ef] border border-[#d8d8d3]">
+          <div className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-[#f1f1ef] border border-[#d8d8d3]">
             <div className="relative w-6 h-6 flex items-center justify-center font-bold text-[10px] text-[#595956]">
               <svg className="w-6 h-6 transform -rotate-90">
                 <circle cx="12" cy="12" r="9" stroke="#d8d8d3" strokeWidth="2.5" fill="none" />
@@ -275,9 +275,9 @@ export default function SaaSTreeCanvas({
       {/* ======================================================== */}
       {/* Action Controls Bar directly above Chart */}
       {/* ======================================================== */}
-      <div className="bg-white rounded-xl p-3 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white rounded-xl p-2.5 sm:p-3 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-2.5">
         {/* Left: Levels: [1] [2] [3] [4] [5] selector pills */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
           <span className="text-xs font-semibold text-slate-600 mr-1">Levels:</span>
           {[1, 2, 3, 4, 5].map((lvl) => {
             const isActive = activeLevels.includes(lvl);
@@ -299,7 +299,7 @@ export default function SaaSTreeCanvas({
         </div>
 
         {/* Right: Actions [Random Stack], [Auto-Fill Next], [Lock Positions], [Clear Chart], Undo/Redo */}
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
           {/* Random Stack */}
           <Button
             onClick={onOpenRandomStack}

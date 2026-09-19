@@ -159,12 +159,12 @@ export default function MembersManagerView({
       </div>
 
       {/* Filters Bar */}
-      <div className="bg-white rounded-xl p-4 border border-slate-200/80 shadow-sm flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white rounded-xl p-3 sm:p-4 border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
         {/* Status Filter Tabs */}
-        <div className="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-semibold">
+        <div className="flex items-center bg-slate-100 p-1 rounded-lg text-xs font-semibold overflow-x-auto w-full md:w-auto">
           <button
             onClick={() => setStatusFilter("all")}
-            className={`px-3 py-1.5 rounded-md transition-all ${
+            className={`px-3 py-1.5 rounded-md transition-all whitespace-nowrap ${
               statusFilter === "all" ? "bg-white text-slate-900 shadow-sm font-bold" : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -172,7 +172,7 @@ export default function MembersManagerView({
           </button>
           <button
             onClick={() => setStatusFilter("unplaced")}
-            className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap ${
               statusFilter === "unplaced" ? "bg-white text-amber-700 shadow-sm font-bold" : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -181,7 +181,7 @@ export default function MembersManagerView({
           </button>
           <button
             onClick={() => setStatusFilter("placed")}
-            className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5 whitespace-nowrap ${
               statusFilter === "placed" ? "bg-white text-emerald-700 shadow-sm font-bold" : "text-slate-600 hover:text-slate-900"
             }`}
           >
@@ -222,7 +222,7 @@ export default function MembersManagerView({
 
       {/* Table of Members */}
       <div className="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
               <tr>
@@ -389,6 +389,75 @@ export default function MembersManagerView({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile-Friendly Member Card List (< md screens) */}
+        <div className="block md:hidden divide-y divide-slate-100">
+          {isLoading ? (
+            <div className="text-center py-10 text-slate-400 text-xs">Loading directory records...</div>
+          ) : !members || members.length === 0 ? (
+            <div className="text-center py-10 text-slate-400 text-xs">No members found.</div>
+          ) : (
+            members.map((m) => (
+              <div key={m.id} className="p-3.5 space-y-2.5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => onOpenCommunication(m)}
+                      className="relative shrink-0 rounded-full"
+                      title={`Message ${m.firstName} ${m.lastName}`}
+                    >
+                      <img
+                        src={
+                          m.avatarUrl ||
+                          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80"
+                        }
+                        alt=""
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200"
+                      />
+                      <span className="absolute -bottom-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-[#9d2025] text-[9px] font-bold text-white shadow-sm">+</span>
+                    </button>
+                    <div className="min-w-0">
+                      <div className="font-extrabold text-slate-900 text-sm leading-tight truncate">
+                        {m.firstName} {m.lastName}
+                      </div>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <span className="px-2 py-0.2 rounded-full text-[9px] font-bold bg-[#f8ebe9] text-[#9d2025] border border-[#ecd0cf]">
+                          {m.rank}
+                        </span>
+                        <span className="text-[10px] text-slate-400">ID #{m.id}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => onOpenCommunication(m)}
+                      className="h-8 w-8 p-0 text-[#9d2025]"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={onViewInTree}
+                      className="h-7 text-[11px] font-bold text-[#9d2025] border-[#f0d9d8] px-2"
+                    >
+                      Tree
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1 border-t border-slate-50">
+                  <span className="truncate max-w-[190px]">{m.email}</span>
+                  <span className="font-bold text-slate-700">{m.personalVolume} PV</span>
+                </div>
+              </div>
+            ))
+          )}
         </div>
       </div>
     </div>

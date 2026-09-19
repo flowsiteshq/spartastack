@@ -148,9 +148,9 @@ export default function MessagesWorkspaceView({
       </div>
 
       {/* Main Outreach Explorer */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
         {/* Left Column: Filterable List */}
-        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[580px]">
+        <div className="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col min-h-[360px] lg:min-h-[580px]">
           {/* Controls Bar */}
           <div className="p-4 border-b border-slate-100 space-y-3 bg-[#faf9f6]">
             <div className="relative">

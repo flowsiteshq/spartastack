@@ -15,6 +15,7 @@ import RandomPlacementModal from "@/components/RandomPlacementModal";
 import SaaSDashboard from "@/components/SaaSDashboard";
 import SaaSMemberModal from "@/components/SaaSMemberModal";
 import SaaSNavigation, { ActiveView, SaaSSidebar } from "@/components/SaaSNavigation";
+import MobileNavigation from "@/components/MobileNavigation";
 import SaaSTreeCanvas from "@/components/SaaSTreeCanvas";
 import SaveChartModal from "@/components/SaveChartModal";
 import SavedChartsManager from "@/components/SavedChartsManager";
@@ -60,7 +61,12 @@ export default function Home() {
   const [saveChartModalOpen, setSaveChartModalOpen] = useState(false);
   const [activityDrawerOpen, setActivityDrawerOpen] = useState(false);
   const [importCSVModalOpen, setImportCSVModalOpen] = useState(false);
-  const [masterListOpen, setMasterListOpen] = useState(true);
+  const [masterListOpen, setMasterListOpen] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.innerWidth >= 1024;
+    }
+    return true;
+  });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window === "undefined") return false;
     const urlParam = new URLSearchParams(window.location.search).get("sidebar");
@@ -337,7 +343,18 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f6f3] text-slate-900 flex flex-col font-sans">
+    <div className="min-h-screen bg-[#f7f6f3] text-slate-900 flex flex-col font-sans pb-16 md:pb-0">
+      {/* Mobile Top Navigation & Bottom App Bar */}
+      <MobileNavigation
+        activeView={activeView}
+        onSelectView={(v) => setActiveView(v)}
+        onGlobalSearch={(q) => setSearchHighlight(q)}
+        onOpenRandomStack={() => setRandomModalOpen(true)}
+        onOpenAutoFill={() => setAutoFillModalOpen(true)}
+        onOpenActivityDrawer={() => setActivityDrawerOpen(true)}
+        user={user}
+      />
+
       {/* Top Application Header */}
       <SaaSNavigation
         activeView={activeView}
@@ -362,7 +379,7 @@ export default function Home() {
         />
 
         {/* Center Workspace Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-6 lg:p-8">
           {activeView === "chart" && (
             <SaaSTreeCanvas
               root={treeData?.root || null}

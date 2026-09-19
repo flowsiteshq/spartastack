@@ -89,7 +89,7 @@ export default function SaaSNavigation({
       {/* ======================================================== */}
       {/* Top Application Header */}
       {/* ======================================================== */}
-      <header className="sticky top-0 z-40 bg-[#100e0e] border-b border-[#3d3325] text-white flex items-center justify-between px-4 sm:px-6 h-16 shadow-sm">
+      <header className="hidden md:flex sticky top-0 z-40 bg-[#100e0e] border-b border-[#3d3325] text-white items-center justify-between px-4 sm:px-6 h-16 shadow-sm">
         {/* Left: Brand Monogram & Top Tabs */}
         <div className="flex items-center gap-6">
           <SpartanBrand className="hidden sm:flex" onClick={() => onSelectView("chart")} />
@@ -335,7 +335,7 @@ export function SaaSSidebar({
 
   return (
     <aside
-      className={`relative bg-[#0d0d0e] border-r border-[#3d3325] text-white flex flex-col justify-between min-h-[calc(100vh-4rem)] p-4 flex-shrink-0 transition-[width] duration-300 ease-out ${
+      className={`relative bg-[#0d0d0e] border-r border-[#3d3325] text-white hidden md:flex flex-col justify-between min-h-[calc(100vh-4rem)] p-4 flex-shrink-0 transition-[width] duration-300 ease-out ${
         isCollapsed ? "w-20" : "w-64"
       }`}
     >
