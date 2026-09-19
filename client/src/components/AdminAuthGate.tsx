@@ -1,7 +1,14 @@
 import { Button } from "@/components/ui/button";
-import SpartanBrand from "@/components/SpartanBrand";
+import SpartanBrand, { SPARTAN_EMBLEM_URL } from "@/components/SpartanBrand";
 import { startGoogleLogin } from "@/const";
-import { AlertCircle, ArrowRight, CheckCircle2, LockKeyhole, ShieldCheck, UsersRound } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowRight,
+  LockKeyhole,
+  Network,
+  ShieldCheck,
+  UsersRound,
+} from "lucide-react";
 
 interface AdminAuthGateProps {
   errorCode?: string | null;
@@ -30,36 +37,60 @@ const authErrors: Record<string, { title: string; detail: string }> = {
   },
 };
 
+const experienceCards = [
+  {
+    title: "Member management",
+    detail: "Manage profiles, membership status, roles, and organization access.",
+    Icon: UsersRound,
+  },
+  {
+    title: "Connected organizations",
+    detail: "Bring chapters, schools, teams, and affiliated organizations together.",
+    Icon: Network,
+  },
+  {
+    title: "Private & secure",
+    detail: "Members only see the information and tools they are authorized to access.",
+    Icon: ShieldCheck,
+  },
+];
+
 export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
   const message = errorCode ? authErrors[errorCode] : undefined;
 
   return (
-    <main className="min-h-screen bg-[#f7f6f3] p-4 sm:p-6 lg:p-8 flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 pointer-events-none overflow-hidden" aria-hidden="true">
-        <div className="absolute -top-36 right-[20%] h-[30rem] w-[30rem] rounded-full bg-[#d3aa54]/15 blur-3xl" />
-        <div className="absolute -bottom-48 left-[8%] h-[32rem] w-[32rem] rounded-full bg-[#9d2025]/10 blur-3xl" />
+    <main className="relative min-h-screen overflow-hidden bg-[#0b0a09] p-0 sm:flex sm:items-center sm:justify-center sm:p-4 lg:p-5">
+      {/* Warm brand glow around the desktop presentation surface */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+        <div className="absolute -left-48 top-[14%] h-[32rem] w-[32rem] rounded-full bg-[#d3aa54]/10 blur-[120px]" />
+        <div className="absolute -bottom-64 right-[8%] h-[38rem] w-[38rem] rounded-full bg-[#9d2025]/10 blur-[140px]" />
       </div>
 
-      <section className="relative z-10 w-full max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200/80 bg-white shadow-[0_28px_80px_-32px_rgba(15,23,42,0.32)] grid lg:grid-cols-[0.97fr_1.03fr]">
-        <div className="p-7 sm:p-10 lg:p-14 flex flex-col justify-between min-h-[560px]">
-          <div>
-            <SpartanBrand tone="light" className="mb-4" />
+      <section className="relative z-10 grid min-h-screen w-full overflow-hidden bg-white sm:min-h-0 sm:max-w-[1500px] sm:rounded-[1.65rem] sm:border sm:border-[#d3aa54]/70 sm:shadow-[0_30px_100px_-36px_rgba(0,0,0,0.92)] lg:grid-cols-[0.94fr_1.06fr]">
+        {/* Auth action panel */}
+        <div className="relative flex min-h-[640px] flex-col bg-[#fffefd] px-6 py-7 sm:min-h-[780px] sm:px-10 sm:py-9 lg:px-[10%] lg:py-[7.2%]">
+          <div className="flex-1">
+            <SpartanBrand tone="light" className="scale-[1.02] origin-left" />
 
-            <div className="mt-14 max-w-md">
-              <div className="mb-5 inline-flex items-center gap-2 rounded-full bg-[#f6edda] px-3 py-1.5 text-xs font-bold text-[#76521d]">
-                <ShieldCheck className="h-3.5 w-3.5" />
-                Secure network workspace
+            <div className="mt-12 max-w-[34rem] sm:mt-16">
+              <div className="inline-flex items-center gap-2 rounded-full border border-[#eadcbf] bg-[#faf4e7] px-3.5 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.11em] text-[#755425]">
+                <LockKeyhole className="h-3.5 w-3.5" />
+                Secure member network
               </div>
-              <h1 className="text-4xl font-extrabold leading-[1.08] tracking-[-0.045em] text-slate-950 sm:text-5xl">
-                Your network, securely connected.
+
+              <h1 className="mt-6 text-[2.7rem] font-black leading-[0.99] tracking-[-0.06em] text-[#12110f] sm:text-5xl lg:text-[3.8rem]">
+                One login.
+                <br />
+                Your entire <span className="bg-gradient-to-r from-[#a12625] via-[#b4812e] to-[#d7aa4d] bg-clip-text text-transparent">Spartan Nation.</span>
               </h1>
-              <p className="mt-5 text-base leading-7 text-slate-500">
-                Sign in with Google to manage an organization or match your member profile to an existing network.
+
+              <p className="mt-4 max-w-[29rem] text-[15px] leading-6 text-slate-500 sm:text-base sm:leading-7">
+                Connect with your organization, manage your membership, and access everything available through Spartan Stack.
               </p>
             </div>
 
             {message && (
-              <div role="alert" className="mt-7 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-950">
+              <div role="alert" className="mt-7 flex max-w-[34rem] gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-sm text-amber-950">
                 <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
                 <div>
                   <p className="font-bold">{message.title}</p>
@@ -68,62 +99,98 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
               </div>
             )}
 
-            <div className="mt-8 max-w-md">
+            <div className="mt-7 max-w-[34rem] sm:mt-9">
               <Button
                 onClick={startGoogleLogin}
-                className="group h-13 w-full rounded-xl border border-[#d7d0c5] bg-white px-5 text-[15px] font-bold text-[#1d1b18] shadow-sm transition-all hover:-translate-y-0.5 hover:border-[#d3aa54] hover:bg-[#fffdf9] hover:shadow-md focus-visible:ring-[#a02025]"
+                className="group h-14 w-full rounded-xl border border-[#d7d2ca] bg-white px-5 text-[15px] font-extrabold text-[#191714] shadow-[0_3px_0_rgba(38,29,20,0.05),0_8px_20px_rgba(38,29,20,0.08)] transition-all duration-200 hover:-translate-y-0.5 hover:border-[#c79b46] hover:bg-[#fffdf8] hover:shadow-[0_5px_0_rgba(38,29,20,0.04),0_15px_25px_rgba(38,29,20,0.12)] active:translate-y-0 active:scale-[0.985] focus-visible:ring-[#9d2025]"
               >
                 <GoogleMark />
-                Continue with Google
-                <ArrowRight className="ml-auto h-4 w-4 text-slate-400 transition-transform group-hover:translate-x-0.5" />
+                <span className="ml-4">Continue with Google</span>
+                <ArrowRight className="ml-auto h-4 w-4 text-[#695d4d] transition-transform duration-200 group-hover:translate-x-1" />
               </Button>
-              <p className="mt-4 flex items-start gap-2 px-1 text-xs leading-5 text-slate-400">
-                <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                Administrators receive management tools. Members are matched to an existing profile with privacy-first, limited visibility by default.
+
+              <p className="mt-4 text-center text-xs leading-5 text-slate-500">
+                Sign in securely to access your Spartan Stack membership and organization.
               </p>
+
+              <div className="mt-4 flex gap-3 rounded-xl border border-[#edf0f3] bg-[#f5f7f9] px-4 py-3 text-xs leading-5 text-slate-600">
+                <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0 text-[#6c7480]" />
+                <p>Your organization controls access. Your profile information remains private unless you choose to share it.</p>
+              </div>
             </div>
           </div>
 
-          <div className="mt-12 flex items-center gap-3 border-t border-slate-100 pt-6 text-xs text-slate-400">
-            <LockKeyhole className="h-4 w-4 text-slate-400" />
-            <span>Protected Google access for organization creators and verified members.</span>
+          <div className="mt-10 border-t border-[#e8e4dc] pt-5 sm:mt-14">
+            <p className="text-sm font-extrabold text-[#23201b]">New to Spartan Stack?</p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">Your organization administrator will invite you.</p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
+              <span>Members</span>
+              <span className="h-4 w-px bg-[#c79b46]" />
+              <span>Organizations</span>
+              <span className="h-4 w-px bg-[#c79b46]" />
+              <span>Community</span>
+              <span className="h-4 w-px bg-[#c79b46]" />
+              <span>Opportunity</span>
+            </div>
           </div>
         </div>
 
-        <aside className="relative hidden overflow-hidden bg-[#100e0e] px-10 py-12 text-white lg:flex lg:flex-col lg:justify-between">
+        {/* Brand and security story panel (desktop presentation) */}
+        <aside className="relative hidden overflow-hidden border-l border-[#5d4227] bg-[#100d0b] px-8 py-9 text-white lg:flex lg:min-h-[780px] lg:flex-col lg:justify-between xl:px-[9%] xl:py-[7.2%]">
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_30%,rgba(173,112,38,0.42)_0%,rgba(53,30,18,0.18)_30%,rgba(10,9,8,0.12)_55%,rgba(10,9,8,0.9)_100%)]" />
+          <div className="absolute inset-0 bg-[linear-gradient(115deg,rgba(8,8,8,0.97)_0%,rgba(13,11,10,0.78)_52%,rgba(31,18,12,0.26)_100%)]" />
+          <div className="absolute -right-[10%] -top-[11%] h-[720px] w-[720px] rounded-full border border-[#d3aa54]/15" />
+          <div className="absolute right-[8%] top-[12%] h-[500px] w-[500px] rounded-full border border-[#d3aa54]/10" />
           <img
-            src="https://images.unsplash.com/photo-1521737711867-e3b97375f902?auto=format&fit=crop&w=1500&q=85"
-            alt="Colleagues collaborating around a shared plan"
-            className="absolute inset-0 h-full w-full object-cover opacity-25"
+            src={SPARTAN_EMBLEM_URL}
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -right-16 top-3 h-[38rem] w-[38rem] object-contain opacity-[0.30] mix-blend-screen xl:-right-10 xl:h-[43rem] xl:w-[43rem]"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(160deg,rgba(16,14,14,0.94)_0%,rgba(57,25,17,0.88)_56%,rgba(16,14,14,0.97)_100%)]" />
-          <div className="absolute -right-24 top-20 h-72 w-72 rounded-full border border-[#d3aa54]/20" />
-          <div className="absolute -right-8 top-36 h-48 w-48 rounded-full border border-[#d3aa54]/20" />
+          <div className="absolute bottom-0 right-0 h-[64%] w-full bg-[radial-gradient(ellipse_at_94%_70%,rgba(151,30,28,0.38)_0%,transparent_42%)]" />
 
-          <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[#d3aa54]/35 bg-[#d3aa54]/10 px-3 py-1.5 text-xs font-semibold text-[#f0deb4] backdrop-blur-sm">
-              <UsersRound className="h-3.5 w-3.5" />
-              Built for connected teams
-            </span>
-            <h2 className="mt-7 max-w-sm text-3xl font-bold leading-tight tracking-[-0.035em]">
-              See the whole team. Make every placement count.
+          <div className="relative max-w-[38rem]">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#d3aa54]/70 bg-[#150f0a]/65 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#f2e1ae] shadow-lg backdrop-blur-md">
+              <img src={SPARTAN_EMBLEM_URL} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
+              Powered by <span className="text-[#e3bd60]">Spartan Nation</span>
+            </div>
+
+            <h2 className="mt-10 max-w-[34rem] text-4xl font-black leading-[1.04] tracking-[-0.045em] text-white xl:text-[3.45rem]">
+              Your organization.
+              <br />
+              Your members.
+              <br />
+              <span className="text-[#e0b653]">One powerful network.</span>
             </h2>
+            <p className="mt-4 max-w-[34rem] text-base leading-7 text-slate-200">
+              Everything your organization needs to connect, manage, and grow its community.
+            </p>
           </div>
 
-          <div className="relative space-y-4">
-            {[
-              ["Live organization chart", "See placements, openings, and lock states at a glance."],
-              ["Controlled planning", "Save versions before trying a new stacking strategy."],
-              ["Administrator safeguards", "Only assigned administrators can make changes."],
-            ].map(([title, detail]) => (
-              <div key={title} className="flex gap-3 rounded-2xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur-sm">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#d3aa54]" />
-                <div>
-                  <p className="text-sm font-bold text-white">{title}</p>
-                  <p className="mt-1 text-xs leading-5 text-slate-300">{detail}</p>
+          <div className="relative space-y-3.5">
+            {experienceCards.map(({ title, detail, Icon }) => (
+              <div key={title} className="group flex items-center gap-4 rounded-2xl border border-[#c89b41]/85 bg-[#140f0c]/74 p-3.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-md transition-colors hover:bg-[#1c1510]/90">
+                <div className="flex h-[68px] w-[76px] shrink-0 items-center justify-center rounded-xl border border-[#c89b41]/60 bg-[radial-gradient(circle_at_45%_40%,rgba(183,132,50,0.26),rgba(31,20,13,0.92)_75%)] text-[#e4bb5b]">
+                  <Icon className="h-8 w-8" strokeWidth={1.65} />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-extrabold uppercase tracking-[0.09em] text-[#f0ce79]">{title}</p>
+                  <p className="mt-1 max-w-[25rem] text-sm leading-5 text-slate-100">{detail}</p>
+                </div>
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#d3aa54]/50 text-[#efcf78] transition-transform duration-200 group-hover:translate-x-0.5">
+                  <ArrowRight className="h-4 w-4" />
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="relative pt-4 text-center">
+            <div className="flex items-center gap-4 text-[#d3aa54]">
+              <span className="h-px flex-1 bg-gradient-to-r from-transparent to-[#d3aa54]" />
+              <span className="text-[11px] font-bold uppercase tracking-[0.52em]">Stronger together</span>
+              <span className="h-px flex-1 bg-gradient-to-l from-transparent to-[#d3aa54]" />
+            </div>
+            <p className="mt-5 text-[10px] font-bold uppercase tracking-[0.38em] text-slate-300">People&nbsp;&nbsp; | &nbsp;&nbsp;Purpose&nbsp;&nbsp; | &nbsp;&nbsp;Progress</p>
           </div>
         </aside>
       </section>
@@ -133,7 +200,7 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
 
 function GoogleMark() {
   return (
-    <svg aria-hidden="true" className="h-5 w-5 shrink-0" viewBox="0 0 24 24">
+    <svg aria-hidden="true" className="h-6 w-6 shrink-0" viewBox="0 0 24 24">
       <path fill="#4285F4" d="M21.8 12.23c0-.71-.06-1.39-.18-2.05H12v3.88h5.5a4.7 4.7 0 0 1-2.04 3.08v2.52h3.31c1.94-1.79 3.03-4.42 3.03-7.43Z" />
       <path fill="#34A853" d="M12 22c2.75 0 5.06-.91 6.75-2.46l-3.31-2.52c-.92.62-2.09.99-3.44.99-2.65 0-4.9-1.79-5.7-4.2H2.88v2.6A10.2 10.2 0 0 0 12 22Z" />
       <path fill="#FBBC05" d="M6.3 13.81A6.13 6.13 0 0 1 5.98 12c0-.63.11-1.24.32-1.81v-2.6H2.88A10 10 0 0 0 1.8 12c0 1.61.39 3.13 1.08 4.41l3.42-2.6Z" />
