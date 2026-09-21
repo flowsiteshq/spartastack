@@ -82,7 +82,7 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
               <h1 className="mt-6 text-[2.7rem] font-black leading-[0.99] tracking-[-0.06em] text-[#12110f] sm:text-5xl lg:text-[3.8rem]">
                 One login.
                 <br />
-                Your entire <span className="bg-gradient-to-r from-[#a12625] via-[#b4812e] to-[#d7aa4d] bg-clip-text text-transparent">Spartan Nation.</span>
+                Your entire <span className="bg-gradient-to-r from-[#a12625] via-[#b4812e] to-[#d7aa4d] bg-clip-text text-transparent">Sparta Nation.</span>
               </h1>
 
               <p className="mt-4 max-w-[29rem] text-[15px] leading-6 text-slate-500 sm:text-base sm:leading-7">
@@ -161,7 +161,7 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
           <div className="relative max-w-[38rem]">
             <div className="inline-flex items-center gap-2 rounded-full border border-[#d3aa54]/70 bg-[#150f0a]/65 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.12em] text-[#f2e1ae] shadow-lg backdrop-blur-md">
               <img src={SPARTAN_EMBLEM_URL} alt="" aria-hidden="true" className="h-5 w-5 object-contain" />
-              Powered by <span className="text-[#e3bd60]">Spartan Nation</span>
+              Powered by <span className="text-[#e3bd60]">Sparta Nation</span>
             </div>
 
             <h2 className="mt-10 max-w-[34rem] text-4xl font-black leading-[1.04] tracking-[-0.045em] text-white xl:text-[3.45rem]">

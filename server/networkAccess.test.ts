@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 
-function createOwnerContext(userId: number = 1): TrpcContext {
+function createOwnerContext(userId: number = 1710145): TrpcContext {
   return {
     user: {
       id: userId,
@@ -40,7 +40,7 @@ function createMemberContext(userId: number, email: string): TrpcContext {
 
 describe("Member Network Access, Join Matching, and Visibility Boundaries", () => {
   it("allows verified Google users to discover and join a network via matching member email with limited view", async () => {
-    const ownerCtx = createOwnerContext(1);
+    const ownerCtx = createOwnerContext();
     const ownerCaller = appRouter.createCaller(ownerCtx);
 
     const orgs = await ownerCaller.org.list();
@@ -79,7 +79,7 @@ describe("Member Network Access, Join Matching, and Visibility Boundaries", () =
   });
 
   it("handles phone matching as an approval-pending request requiring creator sign-off", async () => {
-    const ownerCtx = createOwnerContext(1);
+    const ownerCtx = createOwnerContext();
     const ownerCaller = appRouter.createCaller(ownerCtx);
 
     const orgs = await ownerCaller.org.list();
@@ -128,7 +128,7 @@ describe("Member Network Access, Join Matching, and Visibility Boundaries", () =
   });
 
   it("allows only the organization creator to grant full-network visibility", async () => {
-    const ownerCtx = createOwnerContext(1);
+    const ownerCtx = createOwnerContext();
     const ownerCaller = appRouter.createCaller(ownerCtx);
 
     const orgs = await ownerCaller.org.list();

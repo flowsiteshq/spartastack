@@ -537,7 +537,7 @@ export default function Home() {
       <footer className="bg-[#fffdf9] border-t border-[#ded4c3] py-3 px-6 text-xs text-slate-500 flex flex-wrap items-center justify-between gap-4">
         <SpartanBrand tone="light" className="pointer-events-none" />
         <div className="text-slate-400 text-[11px]">
-          Spartan Nation • Organization planning system
+          Sparta Nation • Organization planning system
         </div>
       </footer>
 

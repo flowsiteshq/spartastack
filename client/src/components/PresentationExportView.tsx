@@ -189,7 +189,7 @@ export default function PresentationExportView({
 
         {/* Clean Executive Footer */}
         <div className="border-t border-slate-200 pt-6 flex items-center justify-between text-xs text-slate-400">
-          <div>Spartan Stack • Spartan Nation</div>
+          <div>Spartan Stack • Sparta Nation</div>
           <div>Confidential • Internal Leadership Review</div>
         </div>
       </div>

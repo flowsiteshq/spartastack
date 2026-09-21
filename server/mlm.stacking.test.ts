@@ -5,7 +5,7 @@ import type { TrpcContext } from "./_core/context";
 function createAdminContext(): TrpcContext {
   return {
     user: {
-      id: 1,
+      id: 1710145,
       openId: "google_109876543210987654321",
       email: "admin@memberstack.internal",
       name: "Lead Matrix Architect",
@@ -65,7 +65,7 @@ describe("MLM Matrix Stacking System", () => {
 
     const orgs = await caller.org.list();
     expect(orgs.length).toBeGreaterThan(0);
-    expect(orgs[0].code).toBe("APEX-HORIZONS");
+    expect(orgs[0].code).toBe("SPARTA-NATION-EXAMPLE");
     expect(orgs[0].matrixWidth).toBe(3);
     expect(orgs[0].matrixDepth).toBe(5);
   });
@@ -104,7 +104,7 @@ describe("MLM Matrix Stacking System", () => {
     expect(allMembers.every((m) => Boolean(m.avatarUrl))).toBe(true);
   });
 
-  it("constructs accurate 3x5 matrix tree with Mr. Curtis at root and max 3 children per node", async () => {
+  it("constructs an accurate 3x5 matrix tree with the example Apex and three child legs", async () => {
     const ctx = createAdminContext();
     const caller = appRouter.createCaller(ctx);
 
@@ -113,7 +113,7 @@ describe("MLM Matrix Stacking System", () => {
 
     const treeData = await caller.matrix.getTree({ orgId });
     expect(treeData.root).toBeDefined();
-    expect(treeData.root?.member.lastName).toBe("Curtis");
+    expect(treeData.root?.member.lastName).toBe("King");
     expect(treeData.root?.level).toBe(0);
     expect(treeData.root?.children.length).toBe(3);
     expect(treeData.stats.maxWidth).toBe(3);
@@ -129,8 +129,8 @@ describe("MLM Matrix Stacking System", () => {
     const orgId = orgs[0].id;
 
     const placedMembers = await caller.member.list({ orgId, status: "placed" });
-    const curtis = placedMembers.find((m) => m.lastName === "Curtis");
-    expect(curtis).toBeDefined();
+    const apexMember = placedMembers.find((m) => m.lastName === "King");
+    expect(apexMember).toBeDefined();
 
     const openSlots = await caller.matrix.getOpenSlots({ orgId });
     expect(openSlots.length).toBeGreaterThan(0);
@@ -139,7 +139,7 @@ describe("MLM Matrix Stacking System", () => {
     await expect(
       caller.matrix.place({
         orgId,
-        memberId: curtis!.id,
+        memberId: apexMember!.id,
         parentId: slot.parentId,
         positionIndex: slot.positionIndex,
       })

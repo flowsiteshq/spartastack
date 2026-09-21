@@ -229,6 +229,17 @@ export async function getOrganizations(): Promise<Organization[]> {
   return db.select().from(organizations).orderBy(asc(organizations.id));
 }
 
+/** Returns only the stacks created by the signed-in administrator. */
+export async function getOrganizationsForOwner(userId: number): Promise<Organization[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(organizations)
+    .where(eq(organizations.ownerUserId, userId))
+    .orderBy(asc(organizations.id));
+}
+
 export async function getOrganizationById(id: number): Promise<Organization | undefined> {
   const db = await getDb();
   if (!db) return undefined;
@@ -1905,10 +1916,109 @@ export async function renameSavedChart(chartId: number, newName: string): Promis
 }
 
 // ========================================================
-// Initial Seed Data (Matches Reference Image Exactly)
+// Starter Data
 // ========================================================
 
+/**
+ * Creates the single, intentional example shown in a fresh workspace. The
+ * live product should never seed a collection of placeholder organizations.
+ */
+async function seedSpartaNationExampleNetwork(db: NonNullable<Awaited<ReturnType<typeof getDb>>>): Promise<void> {
+  const [orgResult] = await db.insert(organizations).values({
+    name: "Sparta Nation Example Network",
+    code: "SPARTA-NATION-EXAMPLE",
+    description: "A complete, editable 3 × 5 example network for learning the Sparta Stack workflow.",
+    matrixWidth: 3,
+    matrixDepth: 5,
+    blueprintCode: "SPARTA-3X5-EXAMPLE",
+  });
+  const orgId = orgResult.insertId;
+
+  const people = [
+    ["leonidas", "Leonidas", "King", "leonidas@example.spartanstack.io", "Crown Director", 500, "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["athena", "Athena", "Vale", "athena@example.spartanstack.io", "Diamond Executive", 420, "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["orion", "Orion", "Reed", "orion@example.spartanstack.io", "Diamond Executive", 385, "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["lyra", "Lyra", "Stone", "lyra@example.spartanstack.io", "Gold Leader", 325, "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["damon", "Damon", "Cross", "damon@example.spartanstack.io", "Silver Associate", 245, "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["cassia", "Cassia", "Rowe", "cassia@example.spartanstack.io", "Silver Associate", 220, "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["theo", "Theo", "Grant", "theo@example.spartanstack.io", "Associate", 145, "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["helena", "Helena", "Troy", "helena@example.spartanstack.io", "Silver Associate", 235, "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["cassius", "Cassius", "Vance", "cassius@example.spartanstack.io", "Silver Associate", 210, "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["isadora", "Isadora", "North", "isadora@example.spartanstack.io", "Associate", 150, "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["nikos", "Nikos", "Ash", "nikos@example.spartanstack.io", "Silver Associate", 225, "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["elara", "Elara", "Wren", "elara@example.spartanstack.io", "Silver Associate", 205, "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["marcus", "Marcus", "Aurelius", "marcus@example.spartanstack.io", "Associate", 135, "https://images.unsplash.com/photo-1507591064344-4c6ce005b128?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["mira", "Mira", "Sol", "mira@example.spartanstack.io", "Associate", 110, "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["thalia", "Thalia", "West", "thalia@example.spartanstack.io", "Associate", 105, "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["argus", "Argus", "Pike", "argus@example.spartanstack.io", "Bronze Builder", 115, "https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["selene", "Selene", "Ray", "selene@example.spartanstack.io", "Associate", 100, "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=256&h=256&q=80"],
+    ["draco", "Draco", "Lane", "draco@example.spartanstack.io", "Bronze Builder", 120, "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=256&h=256&q=80"],
+  ] as const;
+
+  const memberIds = new Map<string, number>();
+  for (const [key, firstName, lastName, email, rank, personalVolume, avatarUrl] of people) {
+    const [result] = await db.insert(members).values({
+      orgId,
+      firstName,
+      lastName,
+      email,
+      phone: null,
+      rank,
+      personalVolume,
+      avatarUrl,
+      status: "active",
+      notes: "Sparta Nation example member",
+    });
+    memberIds.set(key, result.insertId);
+  }
+
+  const placementIds = new Map<string, number>();
+  async function place(key: string, parentKey: string | null, positionIndex: number, level: number, isLocked = false) {
+    const [result] = await db.insert(placements).values({
+      orgId,
+      memberId: memberIds.get(key)!,
+      parentId: parentKey ? placementIds.get(parentKey)! : null,
+      level,
+      positionIndex,
+      slotCoordinate: level === 0 ? "LEVEL 0 - APEX" : `LEVEL ${level} - POSITION ${positionIndex + 1}`,
+      isLocked,
+      notes: isLocked ? "Example locked placement" : null,
+      placedAt: new Date(),
+    });
+    placementIds.set(key, result.insertId);
+  }
+
+  await place("leonidas", null, 0, 0, true);
+  await place("athena", "leonidas", 0, 1, true);
+  await place("orion", "leonidas", 1, 1, true);
+  await place("lyra", "leonidas", 2, 1);
+  await place("damon", "athena", 0, 2);
+  await place("cassia", "athena", 1, 2);
+  await place("theo", "athena", 2, 2);
+  await place("helena", "orion", 0, 2);
+  await place("cassius", "orion", 1, 2);
+  await place("isadora", "orion", 2, 2);
+  await place("nikos", "lyra", 0, 2);
+  await place("elara", "lyra", 1, 2);
+  await place("marcus", "lyra", 2, 2);
+
+  await saveChartSnapshot(orgId, "Sparta Nation Example Baseline", "A complete, editable Sparta Nation 3 × 5 example.");
+  await logActivity(orgId, "Sparta Nation", "Created the complete Sparta Nation example network", "init");
+}
+
 export async function seedInitialMLMDataIfEmpty(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const existingOrgs = await db.select().from(organizations).limit(1);
+  if (existingOrgs.length > 0) return;
+  await seedSpartaNationExampleNetwork(db);
+}
+
+/**
+ * Retained solely as a historical migration reference. It is never invoked.
+ * New installations are seeded through seedSpartaNationExampleNetwork above.
+ */
+async function seedLegacyReferenceDataDisabled(): Promise<void> {
   const db = await getDb();
   if (!db) return;
 

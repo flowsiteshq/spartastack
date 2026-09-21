@@ -179,7 +179,7 @@ export const appRouter = router({
     list: adminProcedure.query(async ({ ctx }) => {
       await db.seedInitialMLMDataIfEmpty();
       await db.claimUnownedOrganizationsForCreator(ctx.user.id);
-      return db.getOrganizations();
+      return db.getOrganizationsForOwner(ctx.user.id);
     }),
 
     get: adminProcedure

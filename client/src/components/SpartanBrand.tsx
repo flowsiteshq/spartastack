@@ -43,7 +43,7 @@ export default function SpartanBrand({
             SPARTAN STACK
           </span>
           <span className="text-[9px] font-extrabold tracking-[0.2em] text-[#d3aa54] uppercase leading-tight mt-0.5">
-            BY SPARTAN NATION
+            BY SPARTA NATION
           </span>
         </div>
       )}
