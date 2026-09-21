@@ -131,8 +131,8 @@ export default function Home() {
     window.localStorage.setItem("spartan-stack-sidebar-collapsed", String(sidebarCollapsed));
   }, [sidebarCollapsed]);
 
-  const activeOrgId = selectedOrgId || (orgs && orgs[0]?.id) || 1;
-  const activeOrg = orgs?.find((o) => o.id === activeOrgId);
+  const activeOrgId = selectedOrgId || (orgs && orgs[0]?.id) || 300004;
+  const activeOrg = orgs?.find((o) => o.id === activeOrgId) || orgs?.[0];
 
   const saveChartMutation = trpc.charts.save.useMutation();
   const loadChartMutation = trpc.charts.load.useMutation({
@@ -340,6 +340,10 @@ export default function Home() {
     typeof window !== "undefined" &&
     new URLSearchParams(window.location.search).get("previewOnboarding") === "true";
 
+  const forceChartPreview =
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("previewChart") === "true";
+
   if (forceOnboardingPreview) {
     return (
       <StackOnboarding
@@ -362,7 +366,7 @@ export default function Home() {
     );
   }
 
-  if (!onboardingQuery.data?.completed) {
+  if (!forceChartPreview && !onboardingQuery.data?.completed) {
     return (
       <StackOnboarding
         user={user}
@@ -435,7 +439,7 @@ export default function Home() {
           {activeView === "chart" && (
             <SaaSTreeCanvas
               root={treeData?.root || null}
-              orgName={activeOrg?.name || "Apex Horizons MLM Network"}
+              orgName={activeOrg?.name || "Sparta Nation Example Network"}
               organizations={orgs || []}
               currentOrgId={activeOrgId}
               onSelectOrg={(id) => setSelectedOrgId(id)}

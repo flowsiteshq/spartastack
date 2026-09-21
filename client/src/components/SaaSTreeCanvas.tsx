@@ -124,18 +124,72 @@ export default function SaaSTreeCanvas({
   const [activeLevels, setActiveLevels] = useState<number[]>([1, 2]);
   const [zoomLevel, setZoomLevel] = useState<number>(0.85);
   const [isLockMode, setIsLockMode] = useState<boolean>(false);
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = React.useRef<{
+    pointerId: number;
+    clientX: number;
+    clientY: number;
+    panX: number;
+    panY: number;
+  } | null>(null);
 
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      if (scrollContainerRef.current) {
-        const el = scrollContainerRef.current;
-        const target = (el.scrollWidth - el.clientWidth) / 2;
-        el.scrollLeft = Math.max(0, target);
-      }
-    }, 50);
-    return () => clearTimeout(timer);
-  }, [root, currentOrgId, activeLevels]);
+    setZoomLevel(0.85);
+    setPanOffset({ x: 0, y: 0 });
+  }, [currentOrgId]);
+
+  const adjustZoom = (delta: number) => {
+    setZoomLevel((current) => Math.min(1.65, Math.max(0.45, Number((current + delta).toFixed(2)))));
+  };
+
+  const resetBoardView = () => {
+    setZoomLevel(0.85);
+    setPanOffset({ x: 0, y: 0 });
+    toast.success("Board view reset");
+  };
+
+  const isInteractiveCanvasTarget = (target: EventTarget | null) =>
+    target instanceof Element &&
+    Boolean(target.closest("button, a, input, select, textarea, [role='menuitem'], [data-radix-popper-content-wrapper]"));
+
+  const handleCanvasPointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (isLockMode || event.button !== 0 || isInteractiveCanvasTarget(event.target)) return;
+
+    panStartRef.current = {
+      pointerId: event.pointerId,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      panX: panOffset.x,
+      panY: panOffset.y,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    setIsPanning(true);
+  };
+
+  const handleCanvasPointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const panStart = panStartRef.current;
+    if (!panStart || panStart.pointerId !== event.pointerId) return;
+
+    setPanOffset({
+      x: panStart.panX + event.clientX - panStart.clientX,
+      y: panStart.panY + event.clientY - panStart.clientY,
+    });
+  };
+
+  const finishCanvasPan = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (panStartRef.current?.pointerId !== event.pointerId) return;
+    panStartRef.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+    setIsPanning(false);
+  };
+
+  const handleCanvasWheel = (event: React.WheelEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    adjustZoom(event.deltaY > 0 ? -0.08 : 0.08);
+  };
 
   const toggleLevelFilter = (lvl: number) => {
     setActiveLevels((prev) =>
@@ -378,12 +432,17 @@ export default function SaaSTreeCanvas({
             </button>
           </div>
 
-          {/* Zoom controls */}
-          <div className="flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50">
+          {/* Board navigation controls */}
+          <div className="flex items-center border border-slate-200 rounded-lg p-0.5 bg-slate-50 shrink-0">
+            <div className="hidden lg:flex items-center gap-1 px-1.5 text-[10px] font-bold uppercase tracking-wide text-slate-500" title="Drag the board to move around">
+              <Move className="w-3 h-3 text-[#9d2025]" />
+              <span>Drag</span>
+            </div>
             <button
-              onClick={() => setZoomLevel((z) => Math.max(0.6, Number((z - 0.1).toFixed(2))))}
+              onClick={() => adjustZoom(-0.1)}
               className="p-1 hover:bg-slate-200 text-slate-600 rounded"
               title="Zoom out"
+              aria-label="Zoom out"
             >
               <ZoomOut className="w-3.5 h-3.5" />
             </button>
@@ -391,16 +450,18 @@ export default function SaaSTreeCanvas({
               {Math.round(zoomLevel * 100)}%
             </span>
             <button
-              onClick={() => setZoomLevel((z) => Math.min(1.4, Number((z + 0.1).toFixed(2))))}
+              onClick={() => adjustZoom(0.1)}
               className="p-1 hover:bg-slate-200 text-slate-600 rounded"
               title="Zoom in"
+              aria-label="Zoom in"
             >
               <ZoomIn className="w-3.5 h-3.5" />
             </button>
             <button
-              onClick={() => setZoomLevel(1)}
+              onClick={resetBoardView}
               className="p-1 hover:bg-slate-200 text-slate-600 rounded ml-0.5"
-              title="Reset Zoom"
+              title="Reset board view"
+              aria-label="Reset board view"
             >
               <Maximize2 className="w-3 h-3" />
             </button>
@@ -412,12 +473,27 @@ export default function SaaSTreeCanvas({
       {/* 3×5 Visual Tree Canvas matching reference mockup */}
       {/* ======================================================== */}
       <div
-        ref={scrollContainerRef}
-        className="relative bg-[#fcfbf8] border border-[#e0d8cc] rounded-xl overflow-x-auto min-h-[620px] p-4 sm:p-6 shadow-inner org-chart-canvas"
+        className={`relative bg-[#fcfbf8] border border-[#e0d8cc] rounded-xl overflow-hidden min-h-[620px] p-4 sm:p-6 shadow-inner org-chart-canvas touch-none ${
+          isPanning ? "cursor-grabbing select-none" : isLockMode ? "cursor-default" : "cursor-grab"
+        }`}
+        onPointerDown={handleCanvasPointerDown}
+        onPointerMove={handleCanvasPointerMove}
+        onPointerUp={finishCanvasPan}
+        onPointerCancel={finishCanvasPan}
+        onWheel={handleCanvasWheel}
+        aria-label="Organization chart board. Drag to move the board and use the zoom controls to change scale."
       >
+        <div className="pointer-events-none absolute left-3 top-3 z-10 hidden items-center gap-1.5 rounded-md border border-[#e0d8cc] bg-white/90 px-2 py-1 text-[10px] font-semibold text-slate-500 shadow-sm sm:flex">
+          <Move className="h-3 w-3 text-[#9d2025]" />
+          <span>Drag to move</span>
+          <span className="text-slate-300">•</span>
+          <span>Scroll to zoom</span>
+        </div>
         <div
-          className="w-fit min-w-full mx-auto flex flex-col items-center py-4 transition-transform duration-200 origin-top"
-          style={{ transform: `scale(${zoomLevel})` }}
+          className={`w-fit min-w-full mx-auto flex flex-col items-center py-4 origin-top will-change-transform ${
+            isPanning ? "transition-none" : "transition-transform duration-200"
+          }`}
+          style={{ transform: `translate3d(${panOffset.x}px, ${panOffset.y}px, 0) scale(${zoomLevel})` }}
         >
           {!root ? (
             <div className="text-center py-20 max-w-sm mx-auto space-y-4">
