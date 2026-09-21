@@ -63,9 +63,12 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   await db.insert(users).values(values).onDuplicateKeyUpdate({
     set: {
-      name: values.name,
-      email: values.email,
-      loginMethod: values.loginMethod,
+      // Session refreshes only send an openId and lastSignedIn. Updating the
+      // other fields with their default null values would erase the Google
+      // identity recorded during OAuth and force the client back to sign-in.
+      ...(user.name !== undefined ? { name: values.name } : {}),
+      ...(user.email !== undefined ? { email: values.email } : {}),
+      ...(user.loginMethod !== undefined ? { loginMethod: values.loginMethod } : {}),
       ...(user.phone !== undefined ? { phone: values.phone } : {}),
       ...(user.avatarUrl !== undefined ? { avatarUrl: values.avatarUrl } : {}),
       ...(user.role ? { role: values.role } : {}),
