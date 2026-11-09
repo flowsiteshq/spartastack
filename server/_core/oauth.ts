@@ -6,6 +6,7 @@ import {
   buildGoogleAuthorizationUrl,
   createGoogleOAuthState,
   getGoogleOAuthConfig,
+  getGoogleRedirectUriForRequest,
   GOOGLE_AUTHORIZATION_ENDPOINT,
   GOOGLE_OAUTH_STATE_COOKIE,
   GOOGLE_TOKEN_ENDPOINT,
@@ -84,6 +85,11 @@ export function registerOAuthRoutes(app: Express) {
     }
 
     const state = createGoogleOAuthState();
+    const redirectUri = getGoogleRedirectUriForRequest(
+      config.redirectUri,
+      (req.headers["x-forwarded-host"] as string | undefined) ?? req.get("host"),
+      (req.headers["x-forwarded-proto"] as string | undefined) ?? req.protocol,
+    );
     const cookieOptions = getSessionCookieOptions(req);
     res.cookie(GOOGLE_OAUTH_STATE_COOKIE, state, {
       ...cookieOptions,
@@ -91,7 +97,7 @@ export function registerOAuthRoutes(app: Express) {
       maxAge: GOOGLE_OAUTH_STATE_TTL_MS,
     });
     res.setHeader("Cache-Control", "no-store");
-    res.redirect(302, buildGoogleAuthorizationUrl(config, state));
+    res.redirect(302, buildGoogleAuthorizationUrl({ ...config, redirectUri }, state));
   });
 
   app.get("/api/auth/google/callback", async (req: Request, res: Response) => {
@@ -105,10 +111,20 @@ export function registerOAuthRoutes(app: Express) {
     const code = getQueryParam(req, "code");
     const googleError = getQueryParam(req, "error");
     const cookieOptions = getSessionCookieOptions(req);
+    const redirectUri = getGoogleRedirectUriForRequest(
+      config.redirectUri,
+      (req.headers["x-forwarded-host"] as string | undefined) ?? req.get("host"),
+      (req.headers["x-forwarded-proto"] as string | undefined) ?? req.protocol,
+    );
     const expectedState = parseCookieHeader(req.headers.cookie ?? "")[GOOGLE_OAUTH_STATE_COOKIE];
 
     res.clearCookie(GOOGLE_OAUTH_STATE_COOKIE, cookieOptions);
     res.setHeader("Cache-Control", "no-store");
+
+    if (googleError === "redirect_uri_mismatch") {
+      redirectToLoginError(res, "google_redirect_mismatch");
+      return;
+    }
 
     if (googleError) {
       redirectToLoginError(res, "google_cancelled");
@@ -126,7 +142,7 @@ export function registerOAuthRoutes(app: Express) {
         code,
         config.clientId,
         config.clientSecret,
-        config.redirectUri,
+        redirectUri,
       );
       const profile = await getGoogleProfile(accessToken);
 

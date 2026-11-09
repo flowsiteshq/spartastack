@@ -12,6 +12,9 @@ export type GoogleOAuthConfig = {
   adminEmails: string[];
 };
 
+const GOOGLE_CALLBACK_PATH = "/api/auth/google/callback";
+const PUBLIC_APP_HOSTS = new Set(["spartanstack.io", "www.spartanstack.io"]);
+
 export type GoogleProfile = {
   sub: string;
   email: string;
@@ -56,6 +59,22 @@ export function buildGoogleAuthorizationUrl(config: GoogleOAuthConfig, state: st
     prompt: "select_account",
   }).toString();
   return url.toString();
+}
+
+/** Prefer the canonical public host when a deployment retains a stale callback env. */
+export function getGoogleRedirectUriForRequest(
+  configuredRedirectUri: string,
+  requestHost: string | undefined,
+  requestProtocol: string | undefined,
+): string {
+  const host = requestHost?.split(",")[0]?.trim().toLowerCase() ?? "";
+  const protocol = requestProtocol?.split(",")[0]?.trim().toLowerCase() ?? "";
+
+  if (PUBLIC_APP_HOSTS.has(host) && (protocol === "https" || protocol === "http")) {
+    return `${protocol}://${host}${GOOGLE_CALLBACK_PATH}`;
+  }
+
+  return configuredRedirectUri;
 }
 
 export function parseGoogleProfile(value: unknown): GoogleProfile | null {

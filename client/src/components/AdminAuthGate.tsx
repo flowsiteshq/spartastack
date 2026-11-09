@@ -32,6 +32,10 @@ const authErrors: Record<string, { title: string; detail: string }> = {
     title: "Google sign-in could not be completed",
     detail: "Please try again. If the issue continues, review the Google OAuth configuration.",
   },
+  google_redirect_mismatch: {
+    title: "Google sign-in needs one final configuration update",
+    detail: "The app reached Google, but the callback address is not approved yet. Add https://spartanstack.io/api/auth/google/callback to the Google OAuth client’s authorized redirect URIs, then try again.",
+  },
   google_not_configured: {
     title: "Google sign-in is still being configured",
     detail: "The administrator needs to finish the secure Google OAuth setup before access can be granted.",

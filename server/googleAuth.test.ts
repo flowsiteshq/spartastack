@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildGoogleAuthorizationUrl,
   getGoogleOAuthConfig,
+  getGoogleRedirectUriForRequest,
   isAuthorizedGoogleAdministrator,
   parseGoogleProfile,
 } from "./googleAuth";
@@ -36,6 +37,21 @@ describe("Google OAuth security helpers", () => {
     expect(url.searchParams.get("redirect_uri")).toBe(completeEnvironment.GOOGLE_OAUTH_REDIRECT_URI);
     expect(url.searchParams.get("state")).toBe("csrf-state");
     expect(url.searchParams.get("prompt")).toBe("select_account");
+  });
+
+  it("uses the canonical custom domain when an old configured redirect is stale", () => {
+    expect(
+      getGoogleRedirectUriForRequest(
+        "https://memberstack-juyrdxd7.manus.space/api/auth/google/callback",
+        "spartanstack.io",
+        "https",
+      ),
+    ).toBe("https://spartanstack.io/api/auth/google/callback");
+  });
+
+  it("does not trust arbitrary hosts to change the OAuth callback", () => {
+    const configured = "https://memberstack-juyrdxd7.manus.space/api/auth/google/callback";
+    expect(getGoogleRedirectUriForRequest(configured, "evil.example", "https")).toBe(configured);
   });
 
   it("accepts only verified profiles with a valid Google subject and email", () => {
