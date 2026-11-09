@@ -36,6 +36,22 @@ const authErrors: Record<string, { title: string; detail: string }> = {
     title: "Google sign-in needs one final configuration update",
     detail: "The app reached Google, but the callback address is not approved yet. Add https://spartanstack.io/api/auth/google/callback to the Google OAuth client’s authorized redirect URIs, then try again.",
   },
+  google_token_exchange_failed: {
+    title: "Google authorization could not be exchanged",
+    detail: "Google returned to Spartan Stack, but the server could not complete the secure authorization exchange. Please try again; if it persists, the OAuth client secret or callback settings need correction.",
+  },
+  google_profile_lookup_failed: {
+    title: "Google profile could not be loaded",
+    detail: "Google authorization succeeded, but the account profile could not be read. Please try again or choose another Google account.",
+  },
+  google_database_upsert_failed: {
+    title: "Your Google account was verified, but your profile could not be saved",
+    detail: "The sign-in reached Spartan Stack, but the account record could not be created or updated. Please try again shortly.",
+  },
+  google_session_signing_failed: {
+    title: "Your Google account was verified, but the session could not be created",
+    detail: "The server verified your account but could not create a secure session. The administrator needs to check the production session secret.",
+  },
   google_not_configured: {
     title: "Google sign-in is still being configured",
     detail: "The administrator needs to finish the secure Google OAuth setup before access can be granted.",

@@ -137,6 +137,7 @@ export function registerOAuthRoutes(app: Express) {
       return;
     }
 
+    let stage = "token_exchange";
     try {
       const accessToken = await exchangeGoogleAuthorizationCode(
         code,
@@ -144,6 +145,7 @@ export function registerOAuthRoutes(app: Express) {
         config.clientSecret,
         redirectUri,
       );
+      stage = "profile_lookup";
       const profile = await getGoogleProfile(accessToken);
 
       if (!profile) {
@@ -153,6 +155,7 @@ export function registerOAuthRoutes(app: Express) {
 
       const isAdministrator = isAuthorizedGoogleAdministrator(profile, config);
       const openId = `google_${profile.sub}`;
+      stage = "database_upsert";
       await db.upsertUser({
         openId,
         name: profile.name,
@@ -162,6 +165,7 @@ export function registerOAuthRoutes(app: Express) {
         lastSignedIn: new Date(),
       });
 
+      stage = "session_signing";
       const sessionToken = await sdk.createSessionToken(openId, {
         name: profile.name,
         expiresInMs: ONE_YEAR_MS,
@@ -170,8 +174,9 @@ export function registerOAuthRoutes(app: Express) {
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
       res.redirect(302, "/");
     } catch (error) {
-      console.error("[Google OAuth] Sign-in failed", error instanceof Error ? error.message : "unknown error");
-      redirectToLoginError(res, "google_signin_failed");
+      const detail = error instanceof Error ? error.message : "unknown error";
+      console.error(`[Google OAuth] Sign-in failed during ${stage}`, detail);
+      redirectToLoginError(res, `google_${stage}_failed`);
     }
   });
 }
