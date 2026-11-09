@@ -53,8 +53,16 @@ export async function upsertUser(user: InsertUser): Promise<string> {
   // Reuse an existing verified email record before inserting a new Google
   // subject. This prevents old unique-email migrations from blocking login.
   if (user.email && !user.openId.startsWith("google_onboarding_")) {
-    const existingByEmail = await db.select().from(users).where(eq(users.email, user.email)).limit(1);
-    const existing = existingByEmail[0];
+    let existing: User | undefined;
+    try {
+      const existingByEmail = await db.select().from(users).where(eq(users.email, user.email)).limit(1);
+      existing = existingByEmail[0];
+    } catch (error) {
+      console.warn(
+        "[Database] Email lookup unavailable; continuing with identity insert",
+        error instanceof Error ? error.message : "unknown error",
+      );
+    }
     if (existing) {
       await db.update(users).set({
         name: user.name ?? existing.name,
@@ -153,16 +161,20 @@ export async function upsertUser(user: InsertUser): Promise<string> {
         // If an older migration made email unique, recover the existing
         // verified record by email and bind it to the current Google subject.
         // This avoids creating a second account for the same person.
-        if (!user.email) throw baseError;
-        await db
-          .update(users)
-          .set({
-            openId: user.openId,
-            name: user.name ?? null,
-            email: user.email,
-            lastSignedIn: user.lastSignedIn ?? new Date(),
-          })
-          .where(eq(users.email, user.email));
+        if (user.email) {
+          try {
+            await db.update(users).set({
+              openId: user.openId,
+              name: user.name ?? null,
+              email: user.email,
+              lastSignedIn: user.lastSignedIn ?? new Date(),
+            }).where(eq(users.email, user.email));
+            return user.openId;
+          } catch {
+            // Continue to the original minimal schema below.
+          }
+        }
+        await db.insert(users).values({ openId: user.openId, name: user.name ?? null });
         return user.openId;
       }
     }
