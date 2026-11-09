@@ -115,13 +115,29 @@ export async function upsertUser(user: InsertUser): Promise<void> {
         email: user.email ?? null,
         lastSignedIn: user.lastSignedIn ?? new Date(),
       };
-      await db.insert(users).values(baseValues).onDuplicateKeyUpdate({
-        set: {
-          ...(user.name !== undefined ? { name: baseValues.name } : {}),
-          ...(user.email !== undefined ? { email: baseValues.email } : {}),
-          lastSignedIn: baseValues.lastSignedIn,
-        },
-      });
+      try {
+        await db.insert(users).values(baseValues).onDuplicateKeyUpdate({
+          set: {
+            ...(user.name !== undefined ? { name: baseValues.name } : {}),
+            ...(user.email !== undefined ? { email: baseValues.email } : {}),
+            lastSignedIn: baseValues.lastSignedIn,
+          },
+        });
+      } catch (baseError) {
+        // If an older migration made email unique, recover the existing
+        // verified record by email and bind it to the current Google subject.
+        // This avoids creating a second account for the same person.
+        if (!user.email) throw baseError;
+        await db
+          .update(users)
+          .set({
+            openId: user.openId,
+            name: user.name ?? null,
+            email: user.email,
+            lastSignedIn: user.lastSignedIn ?? new Date(),
+          })
+          .where(eq(users.email, user.email));
+      }
     }
   }
 }
