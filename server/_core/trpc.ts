@@ -32,9 +32,16 @@ export const adminProcedure = t.procedure.use(
   t.middleware(async opts => {
     const { ctx, next } = opts;
 
+    const configuredGoogleAdmins = (process.env.GOOGLE_ADMIN_EMAILS ?? "")
+      .split(",")
+      .map(email => email.trim().toLowerCase())
+      .filter(Boolean);
+    const isApprovedGoogleEmail = Boolean(
+      ctx.user?.email && configuredGoogleAdmins.includes(ctx.user.email.toLowerCase()),
+    );
     const isGoogleAdministrator =
-      ctx.user?.role === "admin" &&
-      ctx.user.loginMethod === "google" &&
+      ctx.user?.loginMethod === "google" &&
+      (ctx.user.role === "admin" || isApprovedGoogleEmail) &&
       (ctx.user.openId.startsWith("google_") || ctx.user.openId === ENV.ownerOpenId);
     const isOwnerAdministrator =
       ctx.user?.role === "admin" &&

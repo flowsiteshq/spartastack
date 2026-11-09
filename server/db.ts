@@ -92,15 +92,37 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       role: user.role ?? "user",
       lastSignedIn: user.lastSignedIn ?? new Date(),
     };
-    await db.insert(users).values(coreValues).onDuplicateKeyUpdate({
-      set: {
-        ...(user.name !== undefined ? { name: coreValues.name } : {}),
-        ...(user.email !== undefined ? { email: coreValues.email } : {}),
-        ...(user.loginMethod !== undefined ? { loginMethod: coreValues.loginMethod } : {}),
-        ...(user.role ? { role: coreValues.role } : {}),
-        lastSignedIn: coreValues.lastSignedIn,
-      },
-    });
+    try {
+      await db.insert(users).values(coreValues).onDuplicateKeyUpdate({
+        set: {
+          ...(user.name !== undefined ? { name: coreValues.name } : {}),
+          ...(user.email !== undefined ? { email: coreValues.email } : {}),
+          ...(user.loginMethod !== undefined ? { loginMethod: coreValues.loginMethod } : {}),
+          ...(user.role ? { role: coreValues.role } : {}),
+          lastSignedIn: coreValues.lastSignedIn,
+        },
+      });
+    } catch (coreError) {
+      // Last-resort compatibility for the original users table: these four
+      // columns predate Google login and are enough to establish a session.
+      console.warn(
+        "[Database] Core user upsert failed; retrying with base auth columns",
+        coreError instanceof Error ? coreError.message : "unknown error",
+      );
+      const baseValues = {
+        openId: user.openId,
+        name: user.name ?? null,
+        email: user.email ?? null,
+        lastSignedIn: user.lastSignedIn ?? new Date(),
+      };
+      await db.insert(users).values(baseValues).onDuplicateKeyUpdate({
+        set: {
+          ...(user.name !== undefined ? { name: baseValues.name } : {}),
+          ...(user.email !== undefined ? { email: baseValues.email } : {}),
+          lastSignedIn: baseValues.lastSignedIn,
+        },
+      });
+    }
   }
 }
 
