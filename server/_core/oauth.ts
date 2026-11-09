@@ -193,7 +193,7 @@ export function registerOAuthRoutes(app: Express) {
                 ? "query"
                 : errorCode;
       const safeMessageSlug = stage === "database_upsert"
-        ? detail.replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 96)
+        ? detail.replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 420)
         : "";
       redirectToLoginError(res, `google_${stage}_failed_${errorCategory}${safeMessageSlug ? `_${safeMessageSlug}` : ""}`);
     }

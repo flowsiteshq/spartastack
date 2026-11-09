@@ -174,6 +174,15 @@ export async function upsertUser(user: InsertUser): Promise<string> {
             // Continue to the original minimal schema below.
           }
         }
+        try {
+          await db.update(users).set({
+            name: user.name ?? null,
+            lastSignedIn: user.lastSignedIn ?? new Date(),
+          }).where(eq(users.openId, user.openId));
+          return user.openId;
+        } catch {
+          // The account may not exist yet; try the smallest insert shape.
+        }
         await db.insert(users).values({ openId: user.openId, name: user.name ?? null });
         return user.openId;
       }
