@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import mysql from "mysql2/promise";
+import { createConnection } from "mysql2/promise";
 import {
   ActivityLog,
   activityLogs,
@@ -54,7 +54,7 @@ export async function upsertUser(user: InsertUser): Promise<string> {
   // in production; the regular Drizzle path remains the test/local fallback.
   if (process.env.NODE_ENV !== "test" && process.env.DATABASE_URL) {
     try {
-      const connection = await mysql.createConnection(process.env.DATABASE_URL);
+      const connection = await createConnection(process.env.DATABASE_URL);
       const value = (input: unknown) => connection.escape(input ?? null);
       const now = value(user.lastSignedIn ?? new Date());
       const query = `INSERT INTO users (openId,name,email,loginMethod,role,lastSignedIn) VALUES (${value(user.openId)},${value(user.name)},${value(user.email)},${value(user.loginMethod)},${value(user.role ?? "user")},${now}) ON DUPLICATE KEY UPDATE name=VALUES(name),email=VALUES(email),loginMethod=VALUES(loginMethod),role=VALUES(role),lastSignedIn=VALUES(lastSignedIn)`;
