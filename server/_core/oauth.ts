@@ -180,7 +180,19 @@ export function registerOAuthRoutes(app: Express) {
         error && typeof error === "object" && "code" in error && typeof error.code === "string"
           ? error.code.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 48)
           : "unknown";
-      redirectToLoginError(res, `google_${stage}_failed_${errorCode || "unknown"}`);
+      const errorText = detail.toLowerCase();
+      const errorCategory = /access denied|permission|not authorized/.test(errorText)
+        ? "permission"
+        : /doesn't exist|does not exist|unknown column|no such table|schema/.test(errorText)
+          ? "schema"
+          : /connect|timeout|econn|network|offline/.test(errorText)
+            ? "connection"
+            : /duplicate|unique|constraint/.test(errorText)
+              ? "constraint"
+              : errorCode === "unknown"
+                ? "query"
+                : errorCode;
+      redirectToLoginError(res, `google_${stage}_failed_${errorCategory}`);
     }
   });
 }
