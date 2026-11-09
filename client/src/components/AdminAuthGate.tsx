@@ -77,7 +77,16 @@ const experienceCards = [
 ];
 
 export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
-  const message = errorCode ? authErrors[errorCode] : undefined;
+  const databaseErrorPrefix = "google_database_upsert_failed_";
+  const message = errorCode
+    ? authErrors[errorCode] ??
+      (errorCode.startsWith(databaseErrorPrefix)
+        ? {
+            title: "Your Google account was verified, but your profile could not be saved",
+            detail: `The production database rejected the account record. Diagnostic category: ${errorCode.slice(databaseErrorPrefix.length) || "unknown"}.`,
+          }
+        : undefined)
+    : undefined;
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0b0a09] p-0 sm:flex sm:items-center sm:justify-center sm:p-4 lg:p-5">

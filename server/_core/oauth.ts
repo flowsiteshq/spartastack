@@ -176,7 +176,11 @@ export function registerOAuthRoutes(app: Express) {
     } catch (error) {
       const detail = error instanceof Error ? error.message : "unknown error";
       console.error(`[Google OAuth] Sign-in failed during ${stage}`, detail);
-      redirectToLoginError(res, `google_${stage}_failed`);
+      const errorCode =
+        error && typeof error === "object" && "code" in error && typeof error.code === "string"
+          ? error.code.replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 48)
+          : "unknown";
+      redirectToLoginError(res, `google_${stage}_failed_${errorCode || "unknown"}`);
     }
   });
 }
