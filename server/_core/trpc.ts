@@ -40,9 +40,9 @@ export const adminProcedure = t.procedure.use(
       ctx.user?.email && configuredGoogleAdmins.includes(ctx.user.email.toLowerCase()),
     );
     const isGoogleAdministrator =
-      ctx.user?.loginMethod === "google" &&
-      (ctx.user.role === "admin" || isApprovedGoogleEmail) &&
-      (ctx.user.openId.startsWith("google_") || ctx.user.openId === ENV.ownerOpenId);
+      (ctx.user?.loginMethod === "google" || isApprovedGoogleEmail) &&
+      (ctx.user?.role === "admin" || isApprovedGoogleEmail) &&
+      (ctx.user?.openId?.startsWith("google_") || ctx.user?.openId === ENV.ownerOpenId || isApprovedGoogleEmail);
     const isOwnerAdministrator =
       ctx.user?.role === "admin" &&
       Boolean(ENV.ownerOpenId) &&

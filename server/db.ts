@@ -45,10 +45,33 @@ export async function getDb() {
 // Users & Auth
 // ========================================================
 
-export async function upsertUser(user: InsertUser): Promise<void> {
+export async function upsertUser(user: InsertUser): Promise<string> {
   if (!user.openId) throw new Error("User openId is required");
   const db = await getDb();
-  if (!db) return;
+  if (!db) return user.openId;
+
+  // Reuse an existing verified email record before inserting a new Google
+  // subject. This prevents old unique-email migrations from blocking login.
+  if (user.email && !user.openId.startsWith("google_onboarding_")) {
+    const existingByEmail = await db.select().from(users).where(eq(users.email, user.email)).limit(1);
+    const existing = existingByEmail[0];
+    if (existing) {
+      await db.update(users).set({
+        name: user.name ?? existing.name,
+        email: user.email,
+        lastSignedIn: user.lastSignedIn ?? new Date(),
+      }).where(eq(users.id, existing.id));
+      try {
+        await db.update(users).set({
+          loginMethod: user.loginMethod ?? existing.loginMethod,
+          role: user.role ?? existing.role,
+        }).where(eq(users.id, existing.id));
+      } catch {
+        // Legacy schemas may not have the newer Google role columns.
+      }
+      return existing.openId;
+    }
+  }
 
   const values: InsertUser = {
     openId: user.openId,
@@ -76,6 +99,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   try {
     await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+    return user.openId;
   } catch (error) {
     // Some Railway environments still have the pre-profile users table. Retry
     // with only the original auth columns so Google login remains available
@@ -102,6 +126,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
           lastSignedIn: coreValues.lastSignedIn,
         },
       });
+      return user.openId;
     } catch (coreError) {
       // Last-resort compatibility for the original users table: these four
       // columns predate Google login and are enough to establish a session.
@@ -123,6 +148,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
             lastSignedIn: baseValues.lastSignedIn,
           },
         });
+        return user.openId;
       } catch (baseError) {
         // If an older migration made email unique, recover the existing
         // verified record by email and bind it to the current Google subject.
@@ -137,6 +163,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
             lastSignedIn: user.lastSignedIn ?? new Date(),
           })
           .where(eq(users.email, user.email));
+        return user.openId;
       }
     }
   }

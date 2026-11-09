@@ -156,7 +156,7 @@ export function registerOAuthRoutes(app: Express) {
       const isAdministrator = isAuthorizedGoogleAdministrator(profile, config);
       const openId = `google_${profile.sub}`;
       stage = "database_upsert";
-      await db.upsertUser({
+      const persistedOpenId = await db.upsertUser({
         openId,
         name: profile.name,
         email: profile.email,
@@ -166,7 +166,7 @@ export function registerOAuthRoutes(app: Express) {
       });
 
       stage = "session_signing";
-      const sessionToken = await sdk.createSessionToken(openId, {
+      const sessionToken = await sdk.createSessionToken(persistedOpenId, {
         name: profile.name,
         expiresInMs: ONE_YEAR_MS,
       });
