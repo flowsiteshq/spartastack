@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import mysql from "mysql2/promise";
 import {
   ActivityLog,
   activityLogs,
@@ -47,6 +48,23 @@ export async function getDb() {
 
 export async function upsertUser(user: InsertUser): Promise<string> {
   if (!user.openId) throw new Error("User openId is required");
+
+  // TiDB's prepared-statement path can return ER_UNKNOWN_ERROR 1105
+  // ("malform packet") for this auth insert. Use a safely escaped text query
+  // in production; the regular Drizzle path remains the test/local fallback.
+  if (process.env.NODE_ENV === "production" && process.env.DATABASE_URL) {
+    try {
+      const connection = await mysql.createConnection(process.env.DATABASE_URL);
+      const value = (input: unknown) => connection.escape(input ?? null);
+      const now = value(user.lastSignedIn ?? new Date());
+      const query = `INSERT INTO users (openId,name,email,loginMethod,role,lastSignedIn) VALUES (${value(user.openId)},${value(user.name)},${value(user.email)},${value(user.loginMethod)},${value(user.role ?? "user")},${now}) ON DUPLICATE KEY UPDATE name=VALUES(name),email=VALUES(email),loginMethod=VALUES(loginMethod),role=VALUES(role),lastSignedIn=VALUES(lastSignedIn)`;
+      await connection.query(query);
+      await connection.end();
+      return user.openId;
+    } catch (error) {
+      console.warn("[Database] Raw production auth upsert failed; using compatibility path", error instanceof Error ? error.message : "unknown error");
+    }
+  }
   const db = await getDb();
   if (!db) return user.openId;
 
