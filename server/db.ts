@@ -54,27 +54,54 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     openId: user.openId,
     name: user.name ?? null,
     email: user.email ?? null,
-    phone: user.phone ?? null,
-    avatarUrl: user.avatarUrl ?? null,
     loginMethod: user.loginMethod ?? null,
     role: user.role ?? "user",
     lastSignedIn: user.lastSignedIn ?? new Date(),
+    ...(user.phone !== undefined ? { phone: user.phone } : {}),
+    ...(user.avatarUrl !== undefined ? { avatarUrl: user.avatarUrl } : {}),
   };
 
-  await db.insert(users).values(values).onDuplicateKeyUpdate({
-    set: {
-      // Session refreshes only send an openId and lastSignedIn. Updating the
-      // other fields with their default null values would erase the Google
-      // identity recorded during OAuth and force the client back to sign-in.
-      ...(user.name !== undefined ? { name: values.name } : {}),
-      ...(user.email !== undefined ? { email: values.email } : {}),
-      ...(user.loginMethod !== undefined ? { loginMethod: values.loginMethod } : {}),
-      ...(user.phone !== undefined ? { phone: values.phone } : {}),
-      ...(user.avatarUrl !== undefined ? { avatarUrl: values.avatarUrl } : {}),
-      ...(user.role ? { role: values.role } : {}),
-      lastSignedIn: values.lastSignedIn,
-    },
-  });
+  const updateSet = {
+    // Session refreshes only send an openId and lastSignedIn. Updating the
+    // other fields with their default null values would erase the Google
+    // identity recorded during OAuth and force the client back to sign-in.
+    ...(user.name !== undefined ? { name: values.name } : {}),
+    ...(user.email !== undefined ? { email: values.email } : {}),
+    ...(user.loginMethod !== undefined ? { loginMethod: values.loginMethod } : {}),
+    ...(user.phone !== undefined ? { phone: values.phone } : {}),
+    ...(user.avatarUrl !== undefined ? { avatarUrl: values.avatarUrl } : {}),
+    ...(user.role ? { role: values.role } : {}),
+    lastSignedIn: values.lastSignedIn,
+  };
+
+  try {
+    await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+  } catch (error) {
+    // Some Railway environments still have the pre-profile users table. Retry
+    // with only the original auth columns so Google login remains available
+    // while the deployment's database migration catches up.
+    console.warn(
+      "[Database] Full user upsert failed; retrying with core auth columns",
+      error instanceof Error ? error.message : "unknown error",
+    );
+    const coreValues = {
+      openId: user.openId,
+      name: user.name ?? null,
+      email: user.email ?? null,
+      loginMethod: user.loginMethod ?? null,
+      role: user.role ?? "user",
+      lastSignedIn: user.lastSignedIn ?? new Date(),
+    };
+    await db.insert(users).values(coreValues).onDuplicateKeyUpdate({
+      set: {
+        ...(user.name !== undefined ? { name: coreValues.name } : {}),
+        ...(user.email !== undefined ? { email: coreValues.email } : {}),
+        ...(user.loginMethod !== undefined ? { loginMethod: coreValues.loginMethod } : {}),
+        ...(user.role ? { role: coreValues.role } : {}),
+        lastSignedIn: coreValues.lastSignedIn,
+      },
+    });
+  }
 }
 
 export async function getUserByOpenId(openId: string): Promise<User | undefined> {
