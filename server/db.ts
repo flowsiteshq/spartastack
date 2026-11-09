@@ -52,7 +52,7 @@ export async function upsertUser(user: InsertUser): Promise<string> {
   // TiDB's prepared-statement path can return ER_UNKNOWN_ERROR 1105
   // ("malform packet") for this auth insert. Use a safely escaped text query
   // in production; the regular Drizzle path remains the test/local fallback.
-  if (process.env.NODE_ENV !== "test" && process.env.DATABASE_URL) {
+  if (process.env.VITEST !== "true" && process.env.DATABASE_URL) {
     try {
       const connection = await createConnection(process.env.DATABASE_URL);
       const value = (input: unknown) => connection.escape(input ?? null);
