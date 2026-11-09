@@ -192,7 +192,10 @@ export function registerOAuthRoutes(app: Express) {
               : errorCode === "unknown"
                 ? "query"
                 : errorCode;
-      redirectToLoginError(res, `google_${stage}_failed_${errorCategory}`);
+      const safeMessageSlug = stage === "database_upsert"
+        ? detail.replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 96)
+        : "";
+      redirectToLoginError(res, `google_${stage}_failed_${errorCategory}${safeMessageSlug ? `_${safeMessageSlug}` : ""}`);
     }
   });
 }
