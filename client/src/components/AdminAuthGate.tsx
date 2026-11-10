@@ -90,6 +90,14 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
   const registerMutation = trpc.auth.register.useMutation({ onSuccess: () => { window.location.href = "/"; } });
   const forgotMutation = trpc.auth.requestPasswordReset.useMutation({ onSuccess: () => setFormMessage("If an account exists for that email, reset instructions will be sent shortly.") });
   const isPending = loginMutation.isPending || registerMutation.isPending || forgotMutation.isPending;
+  const switchAuthMode = (nextMode: "login" | "register" | "forgot") => {
+    setMode(nextMode);
+    setFormError("");
+    setFormMessage("");
+    if (typeof window !== "undefined" && window.location.search.includes("authError=")) {
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  };
   const databaseErrorPrefix = "google_database_upsert_failed_";
   const message = errorCode
     ? authErrors[errorCode] ??
@@ -165,8 +173,8 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
                   <Input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" type="password" autoComplete={mode === "register" ? "new-password" : "current-password"} className="h-12 rounded-xl" minLength={8} required />
                   <Button type="submit" disabled={isPending} className="h-12 w-full rounded-xl bg-[#9d2025] font-extrabold text-white hover:bg-[#821b20]">{isPending ? "Please wait…" : mode === "register" ? "Create account" : "Sign in with email"}<ArrowRight className="ml-auto h-4 w-4" /></Button>
                   <div className="flex items-center justify-between text-xs">
-                    <button type="button" className="font-bold text-[#9d2025] hover:underline" onClick={() => { setMode(mode === "login" ? "register" : "login"); setFormError(""); }}>{mode === "login" ? "Create an account" : "Already have an account? Sign in"}</button>
-                    {mode === "login" && <button type="button" className="text-slate-500 hover:text-[#9d2025] hover:underline" onClick={() => { setMode("forgot"); setFormError(""); }}>Forgot password?</button>}
+                    <button type="button" className="font-bold text-[#9d2025] hover:underline" onClick={() => switchAuthMode(mode === "login" ? "register" : "login")}>{mode === "login" ? "Create an account" : "Already have an account? Sign in"}</button>
+                    {mode === "login" && <button type="button" className="text-slate-500 hover:text-[#9d2025] hover:underline" onClick={() => switchAuthMode("forgot")}>Forgot password?</button>}
                   </div>
                 </form>
               ) : (
@@ -174,7 +182,7 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
                   <p className="text-sm leading-5 text-slate-600">Enter your email and we’ll send instructions to reset your password.</p>
                   <Input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email address" type="email" autoComplete="email" className="h-12 rounded-xl" required />
                   <Button type="submit" disabled={isPending} className="h-12 w-full rounded-xl bg-[#9d2025] font-extrabold text-white hover:bg-[#821b20]">{isPending ? "Sending…" : "Request reset link"}<ArrowRight className="ml-auto h-4 w-4" /></Button>
-                  <button type="button" className="text-xs font-bold text-[#9d2025] hover:underline" onClick={() => setMode("login")}>Back to sign in</button>
+                  <button type="button" className="text-xs font-bold text-[#9d2025] hover:underline" onClick={() => switchAuthMode("login")}>Back to sign in</button>
                 </form>
               )}
               {(formError || formMessage) && <p role="alert" className={`mt-3 rounded-xl px-3 py-2 text-xs leading-5 ${formError ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>{formError || formMessage}</p>}

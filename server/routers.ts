@@ -8,6 +8,17 @@ import { adminProcedure, protectedProcedure, publicProcedure, router } from "./_
 import * as db from "./db";
 import { storagePut } from "./storage";
 
+function authServiceError(error: unknown, fallback: string) {
+  const detail = error instanceof Error ? error.message.toLowerCase() : "";
+  if (/access denied|authentication|connect|econn|timeout|database unavailable|unknown database/.test(detail)) {
+    return "Account services are temporarily unavailable. Please try again in a few minutes.";
+  }
+  if (/already exists|duplicate|unique/.test(detail)) {
+    return "An account with this email already exists. Sign in instead or use Google if that is how you created it.";
+  }
+  return fallback;
+}
+
 function decodeProfilePhoto(dataUrl: string) {
   const match = /^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=]+)$/i.exec(dataUrl.trim());
   if (!match) {
@@ -53,14 +64,21 @@ export const appRouter = router({
           ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
           return { success: true };
         } catch (error) {
-          throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "Unable to create your account" });
+          console.error("[Auth] Password registration failed", error instanceof Error ? error.message : error);
+          throw new TRPCError({ code: "BAD_REQUEST", message: authServiceError(error, "Unable to create your account") });
         }
       }),
 
     loginWithPassword: publicProcedure
       .input(z.object({ email: z.string().trim().email(), password: z.string().min(1).max(128) }))
       .mutation(async ({ ctx, input }) => {
-        const user = await db.authenticatePassword(input.email, input.password);
+        let user;
+        try {
+          user = await db.authenticatePassword(input.email, input.password);
+        } catch (error) {
+          console.error("[Auth] Password sign-in failed", error instanceof Error ? error.message : error);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: authServiceError(error, "Unable to sign you in right now") });
+        }
         if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Email or password is incorrect" });
         const sessionToken = await sdk.createSessionToken(user.openId, { name: user.name, expiresInMs: ONE_YEAR_MS });
         const cookieOptions = getSessionCookieOptions(ctx.req);
