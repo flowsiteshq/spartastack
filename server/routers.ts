@@ -32,6 +32,57 @@ export const appRouter = router({
       return ctx.user;
     }),
 
+    register: publicProcedure
+      .input(z.object({
+        name: z.string().trim().min(2, "Enter your name").max(191),
+        email: z.string().trim().email().max(320),
+        password: z.string().min(8, "Password must be at least 8 characters").max(128),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const email = input.email.trim().toLowerCase();
+          const configuredAdmins = (process.env.GOOGLE_ADMIN_EMAILS ?? "").split(",").map(value => value.trim().toLowerCase());
+          const openId = await db.createPasswordAccount({
+            name: input.name,
+            email,
+            password: input.password,
+            role: configuredAdmins.includes(email) ? "admin" : "user",
+          });
+          const sessionToken = await sdk.createSessionToken(openId, { name: input.name, expiresInMs: ONE_YEAR_MS });
+          const cookieOptions = getSessionCookieOptions(ctx.req);
+          ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+          return { success: true };
+        } catch (error) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: error instanceof Error ? error.message : "Unable to create your account" });
+        }
+      }),
+
+    loginWithPassword: publicProcedure
+      .input(z.object({ email: z.string().trim().email(), password: z.string().min(1).max(128) }))
+      .mutation(async ({ ctx, input }) => {
+        const user = await db.authenticatePassword(input.email, input.password);
+        if (!user) throw new TRPCError({ code: "UNAUTHORIZED", message: "Email or password is incorrect" });
+        const sessionToken = await sdk.createSessionToken(user.openId, { name: user.name, expiresInMs: ONE_YEAR_MS });
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true };
+      }),
+
+    requestPasswordReset: publicProcedure
+      .input(z.object({ email: z.string().trim().email() }))
+      .mutation(async ({ input }) => {
+        await db.createPasswordResetRequest(input.email);
+        return { success: true };
+      }),
+
+    resetPassword: publicProcedure
+      .input(z.object({ email: z.string().trim().email(), token: z.string().min(16), password: z.string().min(8).max(128) }))
+      .mutation(async ({ input }) => {
+        const reset = await db.resetPassword(input);
+        if (!reset) throw new TRPCError({ code: "BAD_REQUEST", message: "That reset link is invalid or expired" });
+        return { success: true };
+      }),
+
     loginAsAdmin: publicProcedure
       .input(
         z

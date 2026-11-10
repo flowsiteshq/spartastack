@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import SpartanBrand, { SPARTAN_EMBLEM_URL } from "@/components/SpartanBrand";
 import { startGoogleLogin } from "@/const";
+import { trpc } from "@/lib/trpc";
 import {
   AlertCircle,
   ArrowRight,
@@ -10,6 +12,7 @@ import {
   UserPlus,
   UsersRound,
 } from "lucide-react";
+import { useState } from "react";
 
 interface AdminAuthGateProps {
   errorCode?: string | null;
@@ -77,6 +80,16 @@ const experienceCards = [
 ];
 
 export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
+  const [mode, setMode] = useState<"login" | "register" | "forgot">("login");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [formError, setFormError] = useState("");
+  const [formMessage, setFormMessage] = useState("");
+  const loginMutation = trpc.auth.loginWithPassword.useMutation({ onSuccess: () => { window.location.href = "/"; } });
+  const registerMutation = trpc.auth.register.useMutation({ onSuccess: () => { window.location.href = "/"; } });
+  const forgotMutation = trpc.auth.requestPasswordReset.useMutation({ onSuccess: () => setFormMessage("If an account exists for that email, reset instructions will be sent shortly.") });
+  const isPending = loginMutation.isPending || registerMutation.isPending || forgotMutation.isPending;
   const databaseErrorPrefix = "google_database_upsert_failed_";
   const message = errorCode
     ? authErrors[errorCode] ??
@@ -119,7 +132,7 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
               </p>
             </div>
 
-            {/* The same secure Google path signs in existing people and creates a new member account. */}
+            {/* Google remains the fast path, with conventional account controls below it. */}
             <div className="mt-6 max-w-[34rem] sm:mt-7">
               <Button
                 onClick={startGoogleLogin}
@@ -133,13 +146,38 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
               <div className="mt-3 flex gap-2.5 rounded-xl border border-[#e7e1d6] bg-[#fcfaf6] px-3.5 py-3 text-xs leading-5 text-slate-600">
                 <UserPlus className="mt-0.5 h-4 w-4 shrink-0 text-[#9d2025]" />
                 <p>
-                  <span className="font-extrabold text-[#2a211a]">New to Spartan Stack?</span> This same step creates your secure member account. Afterward, we’ll help you join an existing network through your verified email or phone number.
+                  <span className="font-extrabold text-[#2a211a]">New to Spartan Stack?</span> Use Google or create an account with your email and password. You can still join an existing network after signing in.
                 </p>
               </div>
 
-              <p className="mt-3 text-center text-xs leading-5 text-slate-500">
-                Sign in securely to access your Spartan Stack membership and organization—no password to remember.
-              </p>
+              <div className="my-5 flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400"><span className="h-px flex-1 bg-[#e8e4dc]" />or use email<span className="h-px flex-1 bg-[#e8e4dc]" /></div>
+
+              {mode !== "forgot" ? (
+                <form className="space-y-3" onSubmit={async (event) => {
+                  event.preventDefault(); setFormError(""); setFormMessage("");
+                  try {
+                    if (mode === "register") await registerMutation.mutateAsync({ name, email, password });
+                    else await loginMutation.mutateAsync({ email, password });
+                  } catch (error) { setFormError(error instanceof Error ? error.message : "Unable to complete authentication"); }
+                }}>
+                  {mode === "register" && <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="Full name" autoComplete="name" className="h-12 rounded-xl" required />}
+                  <Input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email address" type="email" autoComplete="email" className="h-12 rounded-xl" required />
+                  <Input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Password" type="password" autoComplete={mode === "register" ? "new-password" : "current-password"} className="h-12 rounded-xl" minLength={8} required />
+                  <Button type="submit" disabled={isPending} className="h-12 w-full rounded-xl bg-[#9d2025] font-extrabold text-white hover:bg-[#821b20]">{isPending ? "Please wait…" : mode === "register" ? "Create account" : "Sign in with email"}<ArrowRight className="ml-auto h-4 w-4" /></Button>
+                  <div className="flex items-center justify-between text-xs">
+                    <button type="button" className="font-bold text-[#9d2025] hover:underline" onClick={() => { setMode(mode === "login" ? "register" : "login"); setFormError(""); }}>{mode === "login" ? "Create an account" : "Already have an account? Sign in"}</button>
+                    {mode === "login" && <button type="button" className="text-slate-500 hover:text-[#9d2025] hover:underline" onClick={() => { setMode("forgot"); setFormError(""); }}>Forgot password?</button>}
+                  </div>
+                </form>
+              ) : (
+                <form className="space-y-3" onSubmit={async (event) => { event.preventDefault(); setFormError(""); setFormMessage(""); try { await forgotMutation.mutateAsync({ email }); } catch (error) { setFormError(error instanceof Error ? error.message : "Unable to request a reset link"); } }}>
+                  <p className="text-sm leading-5 text-slate-600">Enter your email and we’ll send instructions to reset your password.</p>
+                  <Input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email address" type="email" autoComplete="email" className="h-12 rounded-xl" required />
+                  <Button type="submit" disabled={isPending} className="h-12 w-full rounded-xl bg-[#9d2025] font-extrabold text-white hover:bg-[#821b20]">{isPending ? "Sending…" : "Request reset link"}<ArrowRight className="ml-auto h-4 w-4" /></Button>
+                  <button type="button" className="text-xs font-bold text-[#9d2025] hover:underline" onClick={() => setMode("login")}>Back to sign in</button>
+                </form>
+              )}
+              {(formError || formMessage) && <p role="alert" className={`mt-3 rounded-xl px-3 py-2 text-xs leading-5 ${formError ? "bg-red-50 text-red-700" : "bg-green-50 text-green-700"}`}>{formError || formMessage}</p>}
             </div>
 
             {message && (
@@ -160,7 +198,7 @@ export default function AdminAuthGate({ errorCode }: AdminAuthGateProps) {
 
           <div className="mt-10 border-t border-[#e8e4dc] pt-5 sm:mt-14">
             <p className="text-sm font-extrabold text-[#23201b]">New to Spartan Stack?</p>
-            <p className="mt-1 text-xs leading-5 text-slate-500">Your organization administrator will invite you.</p>
+            <p className="mt-1 text-xs leading-5 text-slate-500">Create an account with Google or your email and password, then choose whether to create or join a stack.</p>
             <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">
               <span>Members</span>
               <span className="h-4 w-px bg-[#c79b46]" />

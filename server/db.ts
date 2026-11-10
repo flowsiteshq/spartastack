@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { createConnection } from "mysql2/promise";
+import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 import {
   ActivityLog,
   activityLogs,
@@ -29,6 +30,105 @@ import {
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+
+async function withRawConnection<T>(work: (connection: Awaited<ReturnType<typeof createConnection>>) => Promise<T>) {
+  if (!process.env.DATABASE_URL) throw new Error("Database unavailable");
+  const connection = await createConnection(process.env.DATABASE_URL);
+  try {
+    return await work(connection);
+  } finally {
+    await connection.end();
+  }
+}
+
+async function ensurePasswordCredentialsTable() {
+  await withRawConnection((connection) => connection.query(`CREATE TABLE IF NOT EXISTS password_credentials (
+    openId VARCHAR(64) NOT NULL PRIMARY KEY,
+    email VARCHAR(320) NOT NULL UNIQUE,
+    passwordHash TEXT NOT NULL,
+    resetTokenHash VARCHAR(128) NULL,
+    resetExpiresAt DATETIME NULL,
+    createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  )`));
+}
+
+async function hashPassword(password: string) {
+  const salt = randomBytes(16);
+  const derived = scryptSync(password, salt, 64, { N: 16384, r: 8, p: 1 });
+  return `scrypt$16384$8$1$${salt.toString("hex")}$${derived.toString("hex")}`;
+}
+
+async function verifyPassword(password: string, encoded: string) {
+  const [, n, r, p, saltHex, hashHex] = encoded.split("$");
+  if (!n || !r || !p || !saltHex || !hashHex) return false;
+  const derived = scryptSync(password, Buffer.from(saltHex, "hex"), hashHex.length / 2, {
+    N: Number(n), r: Number(r), p: Number(p),
+  });
+  const expected = Buffer.from(hashHex, "hex");
+  return derived.length === expected.length && timingSafeEqual(derived, expected);
+}
+
+function normalizeEmail(email: string) {
+  return email.trim().toLowerCase();
+}
+
+export async function createPasswordAccount(input: { name: string; email: string; password: string; role?: "user" | "admin" }) {
+  const email = normalizeEmail(input.email);
+  await ensurePasswordCredentialsTable();
+  return withRawConnection(async (connection) => {
+    const [existing] = await connection.query<any[]>("SELECT openId FROM users WHERE LOWER(email)=? LIMIT 1", [email]);
+    if (existing.length) throw new Error("An account with this email already exists");
+    const openId = `password_${randomBytes(18).toString("hex")}`;
+    const passwordHash = await hashPassword(input.password);
+    await connection.query(
+      "INSERT INTO users (openId,name,email,loginMethod,role,lastSignedIn) VALUES (?,?,?,?,?,CURRENT_TIMESTAMP)",
+      [openId, input.name.trim(), email, "password", input.role ?? "user"],
+    );
+    await connection.query("INSERT INTO password_credentials (openId,email,passwordHash) VALUES (?,?,?)", [openId, email, passwordHash]);
+    return openId;
+  });
+}
+
+export async function authenticatePassword(emailInput: string, password: string) {
+  const email = normalizeEmail(emailInput);
+  await ensurePasswordCredentialsTable();
+  return withRawConnection(async (connection) => {
+    const [rows] = await connection.query<any[]>("SELECT u.openId,u.name,u.email,u.role,c.passwordHash FROM users u JOIN password_credentials c ON c.openId=u.openId WHERE c.email=? LIMIT 1", [email]);
+    const row = rows[0];
+    if (!row || !(await verifyPassword(password, row.passwordHash))) return null;
+    await connection.query("UPDATE users SET lastSignedIn=CURRENT_TIMESTAMP WHERE openId=?", [row.openId]);
+    return { openId: row.openId as string, name: row.name as string, email: row.email as string, role: row.role as "user" | "admin" };
+  });
+}
+
+export async function createPasswordResetRequest(emailInput: string) {
+  const email = normalizeEmail(emailInput);
+  await ensurePasswordCredentialsTable();
+  return withRawConnection(async (connection) => {
+    const [rows] = await connection.query<any[]>("SELECT openId FROM password_credentials WHERE email=? LIMIT 1", [email]);
+    if (!rows[0]) return { found: false };
+    const token = randomBytes(32).toString("hex");
+    const tokenHash = scryptSync(token, email, 32);
+    await connection.query("UPDATE password_credentials SET resetTokenHash=?,resetExpiresAt=DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 30 MINUTE) WHERE email=?", [tokenHash.toString("hex"), email]);
+    return { found: true, token };
+  });
+}
+
+export async function resetPassword(input: { email: string; token: string; password: string }) {
+  const email = normalizeEmail(input.email);
+  await ensurePasswordCredentialsTable();
+  return withRawConnection(async (connection) => {
+    const [rows] = await connection.query<any[]>("SELECT resetTokenHash,resetExpiresAt FROM password_credentials WHERE email=? LIMIT 1", [email]);
+    const row = rows[0];
+    if (!row || !row.resetTokenHash || !row.resetExpiresAt || new Date(row.resetExpiresAt).getTime() < Date.now()) return false;
+    const tokenHash = scryptSync(input.token, email, 32);
+    if (!timingSafeEqual(tokenHash, Buffer.from(row.resetTokenHash, "hex"))) return false;
+    const passwordHash = await hashPassword(input.password);
+    await connection.query("UPDATE password_credentials SET passwordHash=?,resetTokenHash=NULL,resetExpiresAt=NULL WHERE email=?", [passwordHash, email]);
+    return true;
+  });
+}
 
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
@@ -63,6 +163,7 @@ export async function upsertUser(user: InsertUser): Promise<string> {
       return user.openId;
     } catch (error) {
       console.warn("[Database] Raw production auth upsert failed; using compatibility path", error instanceof Error ? error.message : "unknown error");
+      if (process.env.NODE_ENV !== "test" && process.env.VITEST !== "true") throw error;
     }
   }
   const db = await getDb();
